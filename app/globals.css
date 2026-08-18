@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand palette — deep navy, professional & financial */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-brand: #1e3a5f;
+  --color-brand-dark: #15263d;
+  --color-brand-light: #2a5089;
+  --color-success: #22c55e;
+  --color-success-dark: #16a34a;
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+
+  /* Inter via next/font */
+  --font-sans: var(--font-inter);
+
+  /* 8px radius = lg */
+  --radius-lg: 8px;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
