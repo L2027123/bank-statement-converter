@@ -17,32 +17,34 @@ interface Transaction {
 const SYSTEM_PROMPT =
   "You are a bank statement parsing expert. Extract all transaction records from the following bank statement text. Return a JSON array where each object has: date (YYYY-MM-DD), description (string), debit (number or null), credit (number or null), balance (number or null). Return ONLY the JSON array, no other text.";
 
-const MODEL = "anthropic/claude-sonnet-4";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
+const DEEPSEEK_MODEL = "deepseek-chat";
 
-async function parseWithAI(text: string, apiKey: string): Promise<Transaction[]> {
-  const aiResp = await fetch(OPENROUTER_URL, {
+async function parseWithAI(text: string): Promise<Transaction[]> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    throw new Error("DeepSeek API key not configured. Set DEEPSEEK_API_KEY env var.");
+  }
+  const aiResp = await fetch(DEEPSEEK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": process.env.NEXT_PUBLIC_SUPABASE_URL || "bankstatementconverter",
-      "X-Title": "Bank Statement Converter",
     },
     body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 8000,
+      model: DEEPSEEK_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: text },
       ],
-      temperature: 0.1,
+      temperature: 0,
+      max_tokens: 4000,
     }),
   });
 
   if (!aiResp.ok) {
     const errText = await aiResp.text();
-    throw new Error(`AI parsing failed (${aiResp.status}): ${errText}`);
+    throw new Error(`DeepSeek API parsing failed (${aiResp.status}): ${errText}`);
   }
 
   const aiData = await aiResp.json();
@@ -250,16 +252,11 @@ export async function POST(request: NextRequest) {
       throw new Error("No text could be extracted from this PDF (it may be a scanned image).");
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
     let transactions: Transaction[];
 
-    if (apiKey) {
-      try {
-        transactions = await parseWithAI(text, apiKey);
-      } catch {
-        transactions = parseRuleBased(text);
-      }
-    } else {
+    try {
+      transactions = await parseWithAI(text);
+    } catch {
       transactions = parseRuleBased(text);
     }
 
@@ -350,12 +347,17 @@ async function handleDemoMode(request: NextRequest) {
 }
 
 function extractTransactions(text: string): Transaction[] {
-  const start = text.indexOf("[");
-  const end = text.lastIndexOf("]");
+  // DeepSeek 可能把 JSON 包在 markdown 代码块里（```json ... ``` 或 ``` ... ```），先剥离。
+  const cleaned = text
+    .replace(/^[^\[]*/, "")
+    .replace(/```(?:json)?/gi, "")
+    .trim();
+  const start = cleaned.indexOf("[");
+  const end = cleaned.lastIndexOf("]");
   if (start === -1 || end === -1 || end <= start) {
     return [];
   }
-  const jsonText = text.slice(start, end + 1);
+  const jsonText = cleaned.slice(start, end + 1);
   try {
     const parsed = JSON.parse(jsonText);
     if (!Array.isArray(parsed)) return [];
