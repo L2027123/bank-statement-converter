@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BANKS } from "@/lib/banks";
 
+/**
+ * 每日健康检查 API
+ *
+ * 设计原则（红线）：
+ * - 不自动发送邮件
+ * - 不自动调用任何外部推送服务
+ * - 不自动点击 / 提交 / 触发其他平台动作
+ *
+ * 仅做：
+ * - 跑生产环境健康检查
+ * - 生成结构化报告（JSON + 可读 Markdown）
+ * - 返回结果给调用方（用户主动查看 / 手动转发）
+ */
+
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -72,7 +86,10 @@ async function runHealthChecks(): Promise<CheckResult[]> {
   return results;
 }
 
-function buildReportEmail(
+/**
+ * 生成 Markdown 报告（用户可复制到任何地方）
+ */
+function buildMarkdownReport(
   results: CheckResult[],
   dateStr: string
 ): string {
@@ -83,118 +100,43 @@ function buildReportEmail(
   const rows = results
     .map(
       (r) =>
-        `<tr><td>${r.name}</td><td>${r.status}</td><td>${r.durationMs}ms</td><td>${
-          r.ok ? "✅" : "❌"
-        }</td></tr>`
+        `| ${r.name} | ${r.status} | ${r.durationMs}ms | ${r.ok ? "✅" : "❌"} |`
     )
     .join("\n");
 
-  return `<!DOCTYPE html>
-<html>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1f2937;">
-  <div style="background: #1e3a5f; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-    <h1 style="margin: 0; font-size: 22px;">📊 Daily Report — Bank Statement Converter</h1>
-    <p style="margin: 5px 0 0 0; opacity: 0.9;">${dateStr}</p>
-  </div>
+  return `## Bank Statement Converter - Daily Health Report
 
-  <div style="background: ${
-    allPassed ? "#f0fdf4" : "#fef2f2"
-  }; border: 1px solid ${
-    allPassed ? "#bbf7d0" : "#fecaca"
-  }; padding: 16px; border-radius: 0 0 8px 8px;">
+**Date**: ${dateStr}
+**Status**: ${allPassed ? "✅ All Passed" : `❌ ${failed} Failed`}
+**Summary**: ${passed} passed / ${results.length} total
 
-    <h2 style="margin-top: 0; color: ${
-      allPassed ? "#166534" : "#991b1b"
-    };">${allPassed ? "✅ All Passed" : "❌ " + failed + " Check(s) Failed"}</h2>
+| Page | Status | Latency | Result |
+|------|--------|---------|--------|
+${rows}
 
-    <p style="font-size: 14px; color: #6b7280;">${passed} passed / ${
-    results.length
-  } total</p>
+### Today's Action Items (Manual)
 
-    <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px;">
-      <thead>
-        <tr style="background: #f3f4f6; text-align: left;">
-          <th style="padding: 8px; border: 1px solid #e5e7eb;">Page</th>
-          <th style="padding: 8px; border: 1px solid #e5e7eb;">Status</th>
-          <th style="padding: 8px; border: 1px solid #e5e7eb;">Latency</th>
-          <th style="padding: 8px; border: 1px solid #e5e7eb;">Result</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
+${allPassed ? "- [x] Production healthy — no action needed" : "- [ ] Investigate failed checks (check Vercel deployment logs)"}
+- [ ] Reddit: 5 min karma-building in r/accounting (genuine comments + upvotes, manual only)
+- [ ] SEO: Google natural crawl in progress, 1-2 weeks to index 52 bank pages
+- [ ] Find 5-10 US beta testers (friends, LinkedIn, accounting forums, manual outreach only)
 
-    <h3 style="margin-top: 24px; font-size: 16px;">📋 Today's Action Items</h3>
-    <ul style="font-size: 14px; line-height: 1.6;">
-      ${
-        allPassed
-          ? "<li>✅ Production is healthy — no action needed</li>"
-          : "<li>❌ Investigate failed checks (see Vercel deployment logs)</li>"
-      }
-      <li>🤖 Reddit: leave 2-3 genuine comments in r/accounting + upvote 5 posts (karma-building)</li>
-      <li>📈 SEO: Google will start indexing 52 bank pages in 1-2 weeks (no action needed)</li>
-      <li>👥 Find 5-10 US beta testers for the demo flow</li>
-    </ul>
-
-    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-
-    <p style="font-size: 12px; color: #9ca3af;">
-      Production URL: <a href="https://bank-statement-converter-lemon.vercel.app" style="color: #1e3a5f;">bank-statement-converter-lemon.vercel.app</a><br>
-      GitHub Repo: <a href="https://github.com/L2027123/bank-statement-converter" style="color: #1e3a5f;">L2027123/bank-statement-converter</a><br>
-      Daily Issue Log: Check <code>daily-check</code> label in GitHub Issues<br>
-      Total bank landing pages: ${BANKS.length}
-    </p>
-  </div>
-</body>
-</html>`;
-}
-
-async function sendEmail(
-  to: string,
-  subject: string,
-  html: string
-): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return { ok: false, error: "RESEND_API_KEY not set" };
-  }
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Bank Statement Converter <onboarding@resend.dev>",
-        to: [to],
-        subject,
-        html,
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      return { ok: false, error: `Resend API ${res.status}: ${text}` };
-    }
-
-    return { ok: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: message };
-  }
+### Notes
+- Production URL: https://bank-statement-converter-lemon.vercel.app
+- Total bank landing pages: ${BANKS.length}
+- This report is generated automatically. No email is sent automatically.
+- To view daily: visit this URL or check GitHub Issues (if Actions workflow enabled).
+`;
 }
 
 export async function GET(request: NextRequest) {
-  // Vercel Cron 调用 / 手动测试
-  const authHeader = request.headers.get("authorization");
+  // 简单 token 校验，防止外部随便调用（可选）
   const expectedToken = process.env.CRON_SECRET;
-
-  // 如果配了 CRON_SECRET，校验（防止外部随便调用）
-  if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (expectedToken) {
+    const authHeader = request.headers.get("authorization");
+    if (authHeader !== `Bearer ${expectedToken}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   const dateStr = new Date().toLocaleDateString("en-US", {
@@ -209,22 +151,16 @@ export async function GET(request: NextRequest) {
   const failed = results.filter((r) => !r.ok).length;
   const allPassed = failed === 0;
 
-  const html = buildReportEmail(results, dateStr);
-  const subject = `${
-    allPassed ? "✅ All Passed" : "❌ " + failed + " Failed"
-  } — Bank Statement Converter Daily Report`;
+  const markdownReport = buildMarkdownReport(results, dateStr);
 
-  const recipientEmail =
-    process.env.REPORT_RECIPIENT_EMAIL || "junliang2027@outlook.com";
-
-  const emailResult = await sendEmail(recipientEmail, subject, html);
-
+  // 只返回 JSON + Markdown 文本，调用方（用户或 Vercel Cron）自己决定怎么处理
   return NextResponse.json({
     date: dateStr,
     totalChecks: results.length,
     passed: results.length - failed,
     failed,
-    email: emailResult,
+    allPassed,
+    markdownReport,
     results,
   });
 }
