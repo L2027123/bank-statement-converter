@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BANKS } from "@/lib/banks";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -234,6 +235,36 @@ export default function Home() {
                 </Button>
               </CardContent>
             </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Supported Banks */}
+      <section
+        id="banks"
+        className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-20"
+      >
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Supported banks
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            Pick your bank to see how our parser handles your specific
+            statement format.
+          </p>
+        </div>
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {BANKS.map((bank) => (
+            <Link
+              key={bank.slug}
+              href={`/bank/${bank.slug}`}
+              className="group rounded-lg border border-border bg-white p-4 text-sm font-medium text-foreground transition-colors hover:border-brand hover:bg-brand/5"
+            >
+              <div className="font-semibold">{bank.name}</div>
+              <div className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                {bank.statementTypes.slice(0, 2).join(" · ")}
+              </div>
+            </Link>
           ))}
         </div>
       </section>
