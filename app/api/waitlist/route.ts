@@ -11,7 +11,6 @@ const supabase = createClient(
 interface WaitlistInsert {
   email: string | null;
   source: string;
-  metadata?: Record<string, unknown> | null;
 }
 
 function isEmail(value: string): boolean {
@@ -27,7 +26,8 @@ export async function POST(req: Request) {
     };
     const source = (body.source || "landing_page").trim();
 
-    // F2 — bank_request requires bank name in metadata, email is optional.
+    // F2 — bank_request: email optional, bank name encoded in email field
+    // as "bank:<bank_name>" when no real email is provided.
     if (source === "bank_request") {
       const bankName =
         (body.metadata?.bank_name as string | undefined)?.trim() ?? "";
@@ -38,14 +38,18 @@ export async function POST(req: Request) {
         );
       }
       const email = body.email?.trim() ?? "";
-      const insertRow: WaitlistInsert = {
-        email: email && isEmail(email) ? email.toLowerCase() : null,
+      // Encode bank name into email column for persistence without migration.
+      // Format: "bank:<bank_name>" when no real email, or "<email>|bank:<bank_name>" when both.
+      let emailValue: string | null;
+      if (email && isEmail(email)) {
+        emailValue = `${email}|bank:${bankName}`;
+      } else {
+        emailValue = `bank:${bankName}`;
+      }
+      const { error } = await supabase.from("waitlist").insert({
+        email: emailValue,
         source,
-        metadata: { bank_name: bankName },
-      };
-      const { error } = await supabase
-        .from("waitlist")
-        .insert([insertRow]);
+      });
       if (error) throw error;
       return NextResponse.json(
         {
@@ -64,12 +68,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const insertRow: WaitlistInsert = {
+    const { error } = await supabase.from("waitlist").insert({
       email: email.toLowerCase(),
       source,
-      metadata: body.metadata ?? null,
-    };
-    const { error } = await supabase.from("waitlist").insert([insertRow]);
+    });
     if (error) {
       // 23505 = unique_violation (email already on waitlist)
       if (error.code === "23505") {

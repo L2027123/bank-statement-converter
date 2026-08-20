@@ -34,7 +34,7 @@ interface WaitlistEntry {
   id: string;
   email: string | null;
   source: string;
-  metadata: { bank_name?: string } | null;
+  bank_name?: string | null;
   created_at: string;
 }
 
@@ -474,9 +474,9 @@ function WaitlistTab({
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{e.source}</td>
                 <td className="px-4 py-3">
-                  {e.metadata?.bank_name ? (
+                  {e.bank_name ? (
                     <span className="rounded bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
-                      {e.metadata.bank_name}
+                      {e.bank_name}
                     </span>
                   ) : (
                     <span className="text-muted-foreground">—</span>
