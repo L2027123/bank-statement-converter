@@ -77,7 +77,7 @@ function faqs(bank: BankInfo): { q: string; a: string }[] {
     },
     {
       q: `How much does it cost to convert ${bank.name} statements to Excel?`,
-      a: `Free for the first 3 ${bank.name} statements per month. The Pro plan ($19/month) covers 50 statements and the Business plan ($39/month) covers 200 statements — perfect for accountants handling multiple clients' ${bank.name} statements.`,
+      a: `Free for the first 3 conversions. After that, credit packs start at $5 (10 credits) — no monthly subscription, no auto-renew. One credit = one statement PDF. Credits never expire.`,
     },
   ];
 }
@@ -142,7 +142,7 @@ export default async function BankLandingPage({ params }: PageProps) {
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            No credit card required · 3 free statements / month
+            No credit card required · 3 free conversions
           </p>
         </div>
       </section>
@@ -264,6 +264,9 @@ export default async function BankLandingPage({ params }: PageProps) {
             </Link>
             <Link href="/terms" className="hover:text-brand">
               Terms of Service
+            </Link>
+            <Link href="/alternatives/bankstatementconverter" className="hover:text-brand">
+              Compare
             </Link>
             <Link href="/" className="hover:text-brand">
               Back to home

@@ -310,6 +310,13 @@ export default function Home() {
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Credit purchases launching soon. For now, try 3 free conversions — no signup, no credit card.
+          <span className="mx-2">·</span>
+          <Link
+            href="/alternatives/bankstatementconverter"
+            className="text-brand hover:underline"
+          >
+            See how we compare →
+          </Link>
         </p>
       </section>
 
@@ -362,6 +369,12 @@ export default function Home() {
             >
               Contact
             </a>
+            <Link
+              href="/alternatives/bankstatementconverter"
+              className="hover:text-brand"
+            >
+              Compare
+            </Link>
           </nav>
         </div>
       </footer>
