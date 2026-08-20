@@ -17,7 +17,7 @@ interface WaitlistEntry {
 }
 
 // Decode bank_request entries: bank name is encoded in email field
-// as "bank:<name>" or "<email>|bank:<name>".
+// as "bank:<name>:<unique>" or "<email>|bank:<name>:<unique>".
 function decodeEntry(entry: WaitlistEntry): WaitlistEntry {
   if (entry.source !== "bank_request" || !entry.email) return entry;
 
@@ -27,7 +27,10 @@ function decodeEntry(entry: WaitlistEntry): WaitlistEntry {
 
   for (const part of parts) {
     if (part.startsWith("bank:")) {
-      bankName = part.slice(5);
+      // Strip unique suffix: "bank:<name>:<unique>" -> "<name>"
+      const rest = part.slice(5); // remove "bank:"
+      const colonIdx = rest.lastIndexOf(":");
+      bankName = colonIdx > 0 ? rest.slice(0, colonIdx) : rest;
     } else {
       realEmail = part;
     }

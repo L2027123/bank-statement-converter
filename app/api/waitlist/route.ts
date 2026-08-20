@@ -39,12 +39,14 @@ export async function POST(req: Request) {
       }
       const email = body.email?.trim() ?? "";
       // Encode bank name into email column for persistence without migration.
-      // Format: "bank:<bank_name>" when no real email, or "<email>|bank:<bank_name>" when both.
+      // Add unique suffix to avoid UNIQUE constraint violations on repeat requests.
+      // Format: "bank:<bank_name>:<unique>" when no real email, or "<email>|bank:<bank_name>:<unique>" when both.
+      const unique = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       let emailValue: string | null;
       if (email && isEmail(email)) {
-        emailValue = `${email}|bank:${bankName}`;
+        emailValue = `${email}|bank:${bankName}:${unique}`;
       } else {
-        emailValue = `bank:${bankName}`;
+        emailValue = `bank:${bankName}:${unique}`;
       }
       const { error } = await supabase.from("waitlist").insert({
         email: emailValue,
