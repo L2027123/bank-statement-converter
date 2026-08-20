@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { PDFParse } from "pdf-parse";
 import * as XLSX from "xlsx";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveCredits, getPlanLimit, nextResetDate } from "@/lib/credits";
@@ -208,15 +207,7 @@ Closing Balance: $8,834.82
 `;
 
 export async function POST(request: NextRequest) {
-  // DEBUG: temporary sentinel to verify module loaded correctly on Vercel.
   const isDemo = request.cookies.get("demo_mode")?.value === "true";
-  if (!isDemo && process.env.NODE_ENV === "production") {
-    // Allow unauthenticated probe so we can see if the function runs at all.
-    const probeHeader = request.headers.get("x-probe");
-    if (probeHeader === "check") {
-      return NextResponse.json({ ok: true, msg: "module loaded" });
-    }
-  }
 
   if (isDemo) {
     return handleDemoMode(request);
@@ -295,6 +286,9 @@ export async function POST(request: NextRequest) {
     }
     const buffer = Buffer.from(await fileData.arrayBuffer());
 
+    // Dynamic import — pdf-parse is a heavy lib with Node-only deps that
+    // can crash the Vercel function if loaded at module eval time.
+    const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buffer });
     const textResult = await parser.getText();
     await parser.destroy().catch(() => {});
