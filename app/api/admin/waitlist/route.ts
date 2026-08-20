@@ -16,8 +16,9 @@ interface WaitlistEntry {
   bank_name?: string | null;
 }
 
-// Decode bank_request entries: bank name is encoded in email field
-// as "bank:<name>:<unique>" or "<email>|bank:<name>:<unique>".
+// Decode bank_request entries: bank name is encoded in email column.
+// See app/api/waitlist/route.ts for the encoding scheme.
+// Format: "bank:<name>:<unique>" or "<email>|bank:<name>:<unique>"
 function decodeEntry(entry: WaitlistEntry): WaitlistEntry {
   if (entry.source !== "bank_request" || !entry.email) return entry;
 

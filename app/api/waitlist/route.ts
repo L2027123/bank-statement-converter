@@ -38,9 +38,11 @@ export async function POST(req: Request) {
         );
       }
       const email = body.email?.trim() ?? "";
-      // Encode bank name into email column for persistence without migration.
-      // Add unique suffix to avoid UNIQUE constraint violations on repeat requests.
-      // Format: "bank:<bank_name>:<unique>" when no real email, or "<email>|bank:<bank_name>:<unique>" when both.
+      // Encode bank name into email column for persistence without DB migration.
+      // SCHEME: "bank:<bank_name>:<unique_suffix>" (no email)
+      //        or "<user_email>|bank:<bank_name>:<unique_suffix>" (with email)
+      // The unique suffix prevents UNIQUE constraint violations on repeat requests.
+      // Admin view decodes this in app/api/admin/waitlist/route.ts decodeEntry().
       const unique = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       let emailValue: string | null;
       if (email && isEmail(email)) {
