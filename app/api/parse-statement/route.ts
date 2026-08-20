@@ -409,50 +409,56 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleDemoMode(request: NextRequest) {
-  const { statementId, filename } = (await request.json()) as {
-    statementId?: string;
-    filename?: string;
-  };
+  try {
+    const { statementId, filename } = (await request.json()) as {
+      statementId?: string;
+      filename?: string;
+    };
 
-  const text = DEMO_SAMPLE_TEXT;
-  const parsed = parseRuleBased(text);
-  const transactions = parsed.transactions;
+    const text = DEMO_SAMPLE_TEXT;
+    const parsed = parseRuleBased(text);
+    const transactions = parsed.transactions;
 
-  const balanceCheck = computeBalanceCheck(
-    transactions,
-    parsed.opening_balance,
-    parsed.closing_balance
-  );
+    const balanceCheck = computeBalanceCheck(
+      transactions,
+      parsed.opening_balance,
+      parsed.closing_balance
+    );
 
-  const ws = XLSX.utils.json_to_sheet(transactions);
-  // Append balance verification marker to demo Excel as well.
-  XLSX.utils.sheet_add_aoa(
-    ws,
-    [[balanceCheck.verified ? "✓ Balance Verified" : "⚠ Balance mismatch detected, please review"]],
-    { origin: -1 }
-  );
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-  const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-  const csvString = XLSX.utils.sheet_to_csv(ws);
+    const ws = XLSX.utils.json_to_sheet(transactions);
+    // Append balance verification marker to demo Excel as well.
+    XLSX.utils.sheet_add_aoa(
+      ws,
+      [[balanceCheck.verified ? "✓ Balance Verified" : "⚠ Balance mismatch detected, please review"]],
+      { origin: -1 }
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+    const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const csvString = XLSX.utils.sheet_to_csv(ws);
 
-  const id = statementId || `demo-${Date.now()}`;
-  const fn = filename || "demo-statement.pdf";
+    const id = statementId || `demo-${Date.now()}`;
+    const fn = filename || "demo-statement.pdf";
 
-  return NextResponse.json({
-    statement: {
-      id,
-      filename: fn,
-      status: "completed",
-      parsed_data: transactions,
-      excel_url: null,
-      csv_url: null,
-    },
-    balanceCheck,
-    demo: true,
-    excel_base64: excelBuffer.toString("base64"),
-    csv_base64: Buffer.from(csvString, "utf-8").toString("base64"),
-  });
+    return NextResponse.json({
+      statement: {
+        id,
+        filename: fn,
+        status: "completed",
+        parsed_data: transactions,
+        excel_url: null,
+        csv_url: null,
+      },
+      balanceCheck,
+      demo: true,
+      excel_base64: excelBuffer.toString("base64"),
+      csv_base64: Buffer.from(csvString, "utf-8").toString("base64"),
+    });
+  } catch (err) {
+    console.error("handleDemoMode error:", err);
+    const message = err instanceof Error ? err.message : "Demo mode failed.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 // F1 — verify opening + sum(debits/credits) == closing.
