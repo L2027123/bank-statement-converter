@@ -30,12 +30,25 @@ interface ContactData {
   submissions: ContactSubmission[];
 }
 
-type Tab = "analytics" | "contact";
+interface WaitlistEntry {
+  id: string;
+  email: string;
+  source: string;
+  created_at: string;
+}
+
+interface WaitlistData {
+  total: number;
+  entries: WaitlistEntry[];
+}
+
+type Tab = "analytics" | "contact" | "waitlist";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [stats, setStats] = useState<Stats | null>(null);
   const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [waitlistData, setWaitlistData] = useState<WaitlistData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<Tab>("analytics");
@@ -76,10 +89,31 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  async function loadWaitlist() {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/waitlist", {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to load waitlist");
+      }
+      setWaitlistData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
+    setLoading(false);
+  }
+
   function switchTab(t: Tab) {
     if (t === "contact" && !contactData) {
       setTab(t);
       loadContacts();
+    } else if (t === "waitlist" && !waitlistData) {
+      setTab(t);
+      loadWaitlist();
     } else {
       setTab(t);
     }
@@ -120,6 +154,7 @@ export default function AdminPage() {
             onClick={() => {
               setStats(null);
               setContactData(null);
+              setWaitlistData(null);
             }}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
@@ -149,6 +184,16 @@ export default function AdminPage() {
           >
             Contact Form{contactData ? ` (${contactData.total})` : ""}
           </button>
+          <button
+            onClick={() => switchTab("waitlist")}
+            className={`px-4 py-2 text-sm font-medium ${
+              tab === "waitlist"
+                ? "border-b-2 border-brand text-brand"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Waitlist{waitlistData ? ` (${waitlistData.total})` : ""}
+          </button>
         </div>
 
         {error && (
@@ -159,6 +204,8 @@ export default function AdminPage() {
 
         {tab === "contact" ? (
           <ContactTab data={contactData} loading={loading} onRefresh={loadContacts} />
+        ) : tab === "waitlist" ? (
+          <WaitlistTab data={waitlistData} loading={loading} onRefresh={loadWaitlist} />
         ) : (
           <AnalyticsTab stats={stats} />
         )}
@@ -351,6 +398,85 @@ function ContactTab({
             )}
           </div>
         ))}
+      </div>
+    </>
+  );
+}
+
+function WaitlistTab({
+  data,
+  loading,
+  onRefresh,
+}: {
+  data: WaitlistData | null;
+  loading: boolean;
+  onRefresh: () => void;
+}) {
+  if (loading && !data) {
+    return (
+      <div className="rounded-lg border border-border bg-white p-8 text-center text-sm text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!data || data.entries.length === 0) {
+    return (
+      <div className="rounded-lg border border-border bg-white p-8 text-center">
+        <p className="text-sm text-muted-foreground">No waitlist entries yet.</p>
+        <button
+          onClick={onRefresh}
+          className="mt-3 text-sm text-brand hover:underline"
+        >
+          Refresh
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {data.total} entr{data.total === 1 ? "y" : "ies"} on the waitlist
+        </p>
+        <button
+          onClick={onRefresh}
+          disabled={loading}
+          className="text-sm text-brand hover:underline disabled:opacity-50"
+        >
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-border bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border bg-muted text-left text-xs text-muted-foreground">
+            <tr>
+              <th className="px-4 py-3 font-medium">Email</th>
+              <th className="px-4 py-3 font-medium">Source</th>
+              <th className="px-4 py-3 font-medium">Joined</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {data.entries.map((e) => (
+              <tr key={e.id} className="text-foreground">
+                <td className="px-4 py-3">
+                  <a href={`mailto:${e.email}`} className="text-brand hover:underline">
+                    {e.email}
+                  </a>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">{e.source}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                  {new Date(e.created_at).toLocaleString("en-US", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
