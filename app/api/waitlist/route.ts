@@ -94,9 +94,7 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     console.error("Waitlist error:", err);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+    return NextResponse.json({ error: message, detail: String(err) }, { status: 500 });
   }
 }
