@@ -1,0 +1,37 @@
+# Filtered Partner Prospects v2 (Strict Criteria)
+
+> **筛选标准**: 只找「用工具的会计事务所」,排除「做工具的平台」
+> 排除清单: Botkeeper, inDinero, Bench, xendoo, NeoWork, ARDEM, GI Outsourcing (都是平台/BPO,不是事务所)
+
+## 严格筛选后的 7 家真实记账事务所
+
+| # | Company | Email | Phone | Location | Type | Why Good Fit |
+|---|---------|-------|-------|----------|------|--------------|
+| 1 | Accounting Lab (Robert Craig) | rcraig@theaccountinglab.co | 865-444-6710 | Tennessee | CPA + Tax Prep | 3000+小商家客户, 10000+报税/年, 批量处理银行流水 |
+| 2 | Alan M. Lane, CPA | alan@alanmlanecpa.com | 719-290-0522 | Craig, CO | 独立 CPA | 小型 Christian 非营利组织记账, 手工流程多 |
+| 3 | BakerBookkeeps | hello@bakerbookkeeps.com | 731-420-3851 | Nashville, TN | 虚拟记账 | 小型虚拟记账公司, 服务全国小商家 |
+| 4 | TKCPA | info@tkcpa.com | 509-529-0941 | Walla Walla, WA | CPA 事务所 | 小型区域 CPA, 技术能力弱, 最可能用工具 |
+| 5 | Ignite Spot | (官网联系表) | 1-855-694-4648 | Salt Lake City, UT | 外包记账 | US本土团队, QuickBooks 专家, 月末对账多 |
+| 6 | Whiz Consulting | info@whizconsulting.net | 831-632-9736 | Dallas, TX | 外包会计 | 小商家外包会计, 批量 PDF 处理 |
+| 7 | Balance Quest Bookkeeping | (官网联系表) | - | Independence, MO | 独立记账 | Freelancer/2-9人, 价格 $25-49/hr, 小而美 |
+
+## 排除的竞品/平台（不联系）
+
+| Company | 类型 | 排除原因 |
+|---------|------|---------|
+| Botkeeper | AI 记账平台 | 自有技术团队, 会自己抄 |
+| inDinero | 全栈后端平台 | 核心业务含对账单解析 |
+| Bench | 记账平台(被收购) | 自有软件, 竞品 |
+| xendoo | 记账 SaaS 平台 | 自有技术, 竞品 |
+| NeoWork | 外包人力平台 | 是 BPO 平台, 非纯事务所 |
+| ARDEM | BPO + 自动化平台 | 自有自动化技术 |
+| GI Outsourcing | 印度 BPO 平台 | 规模太大, 决策链长 |
+
+## 验证方式
+
+每家公司的类型都经过以下确认:
+- ✅ 有独立官网(非平台子页)
+- ✅ 提供服务而非卖软件
+- ✅ 团队规模 <50 人(多数 2-10 人)
+- ✅ 业务依赖手工流程(QuickBooks + 人工录入)
+- ✅ 无自有技术产品/无 SaaS 产品线

@@ -14,6 +14,7 @@ interface StatementRow {
   filename: string;
   status: string;
   excel_url: string | null;
+  csv_url: string | null;
   created_at: string;
 }
 
@@ -23,6 +24,7 @@ const DEMO_HISTORY: StatementRow[] = [
     filename: "chase-statement-jan.pdf",
     status: "completed",
     excel_url: null,
+    csv_url: null,
     created_at: new Date(Date.now() - 86400000).toISOString(),
   },
   {
@@ -30,6 +32,7 @@ const DEMO_HISTORY: StatementRow[] = [
     filename: "wells-february-statement.pdf",
     status: "completed",
     excel_url: null,
+    csv_url: null,
     created_at: new Date(Date.now() - 172800000).toISOString(),
   },
   {
@@ -37,6 +40,7 @@ const DEMO_HISTORY: StatementRow[] = [
     filename: "bank-of-america.pdf",
     status: "processing",
     excel_url: null,
+    csv_url: null,
     created_at: new Date(Date.now() - 3600000).toISOString(),
   },
 ];
@@ -99,7 +103,7 @@ export default async function DashboardPage() {
 
   const { data: statements } = await supabase
     .from("statements")
-    .select("id, filename, status, excel_url, created_at")
+    .select("id, filename, status, excel_url, csv_url, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 

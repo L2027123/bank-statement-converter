@@ -1,0 +1,111 @@
+name: Daily Production Check
+
+# 每天 UTC 01:00 = 北京时间 09:00 自动运行
+# 也可手动触发（GitHub Actions 页面点 "Run workflow"）
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Production Health Check
+        id: check
+        run: |
+          BASE_URL="https://bank-statement-converter-lemon.vercel.app"
+          FAILED=0
+          REPORT=""
+
+          check_url() {
+            local name="$1"
+            local url="$2"
+            local status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 -L "$url")
+            local time_total=$(curl -s -o /dev/null -w "%{time_total}" --max-time 15 -L "$url")
+            echo "$name: $status (${time_total}s) - $url"
+            REPORT="${REPORT}${name}: ${status} (${time_total}s)\n"
+            if [ "$status" != "200" ]; then
+              FAILED=$((FAILED+1))
+            fi
+          }
+
+          echo "=== Bank Statement Converter - Daily Health Check ==="
+          echo "Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+
+          # 核心页面
+          check_url "Homepage" "${BASE_URL}/"
+          check_url "Login" "${BASE_URL}/login"
+          check_url "Demo Upload" "${BASE_URL}/upload?demo=true"
+          check_url "Privacy" "${BASE_URL}/privacy"
+          check_url "Terms" "${BASE_URL}/terms"
+
+          # 5 个主要银行页
+          check_url "Chase" "${BASE_URL}/bank/chase"
+          check_url "Wells Fargo" "${BASE_URL}/bank/wells-fargo"
+          check_url "Bank of America" "${BASE_URL}/bank/bank-of-america"
+          check_url "Citi" "${BASE_URL}/bank/citi"
+          check_url "Capital One" "${BASE_URL}/bank/capital-one"
+
+          # SEO 资源
+          check_url "Sitemap" "${BASE_URL}/sitemap.xml"
+          check_url "Robots" "${BASE_URL}/robots.txt"
+
+          echo ""
+          echo "=== Summary ==="
+          if [ $FAILED -gt 0 ]; then
+            echo "❌ $FAILED check(s) failed!"
+            echo "report<<EOF" >> $GITHUB_OUTPUT
+            printf "%b" "$REPORT\n❌ $FAILED checks failed\n" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "failed=true" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ All 13 checks passed"
+            echo "report<<EOF" >> $GITHUB_OUTPUT
+            printf "%b" "$REPORT\n✅ All 13 checks passed\n" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "failed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create daily issue (always, for log)
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = `${{ steps.check.outputs.report }}`;
+            const failed = `${{ steps.check.outputs.failed }}` === 'true';
+            const date = new Date().toISOString().slice(0, 10);
+
+            // 关闭昨天的 daily issue（如果有）
+            const oldIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['daily-check'],
+              state: 'open',
+            });
+            for (const issue of oldIssues.data) {
+              if (issue.title !== `Daily Check ${date}`) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            // 创建今天的 issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Daily Check ${date}`,
+              body: `## Bank Statement Converter - Daily Health Report\n\n**Status**: ${failed ? '❌ Failed' : '✅ All Passed'}\n\n**Date**: ${date}\n\n### Results\n\n${report}\n\n### Action Items\n\n${failed ? '- [ ] Investigate failed checks\n- [ ] Check Vercel deployment logs' : '- [x] No action needed today\n- [ ] Optional: Reddit karma-building (manual)'}`,
+              labels: ['daily-check', failed ? 'failed' : 'passed'],
+            });

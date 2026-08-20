@@ -20,6 +20,7 @@ create table if not exists public.statements (
   status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed')),
   parsed_data jsonb,
   excel_url text,
+  csv_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

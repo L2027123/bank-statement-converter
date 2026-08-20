@@ -10,6 +10,7 @@ interface StatementRow {
   filename: string;
   status: string;
   excel_url: string | null;
+  csv_url: string | null;
   created_at: string;
 }
 
@@ -161,15 +162,42 @@ export default function DashboardClient({
                       </td>
                       <td className="px-6 py-3 text-right">
                         {s.status === "completed" ? (
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => {
-                              alert(isDemo ? "演示模式：请回到上传页生成 Excel" : "Download...");
-                            }}
-                          >
-                            Download
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            {s.excel_url && !isDemo ? (
+                              <a href={s.excel_url} target="_blank" rel="noopener noreferrer">
+                                <Button size="sm" variant="success">
+                                  Excel
+                                </Button>
+                              </a>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="success"
+                                onClick={() => {
+                                  alert(isDemo ? "演示模式：请回到上传页生成 Excel" : "Excel 文件不可用");
+                                }}
+                              >
+                                Excel
+                              </Button>
+                            )}
+                            {s.csv_url && !isDemo ? (
+                              <a href={s.csv_url} target="_blank" rel="noopener noreferrer">
+                                <Button size="sm" variant="outline">
+                                  CSV
+                                </Button>
+                              </a>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  alert(isDemo ? "演示模式：请回到上传页生成 CSV" : "CSV 文件不可用");
+                                }}
+                              >
+                                CSV
+                              </Button>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}

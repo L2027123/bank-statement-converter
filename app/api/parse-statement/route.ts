@@ -264,11 +264,13 @@ export async function POST(request: NextRequest) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const csvString = XLSX.utils.sheet_to_csv(ws);
 
-    const exportPath = `${user.id}/${statementId}.xlsx`;
+    const excelPath = `${user.id}/${statementId}.xlsx`;
+    const csvPath = `${user.id}/${statementId}.csv`;
     const { error: upErr } = await supabase.storage
       .from("exports")
-      .upload(exportPath, excelBuffer, {
+      .upload(excelPath, excelBuffer, {
         contentType:
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         upsert: true,
@@ -276,11 +278,24 @@ export async function POST(request: NextRequest) {
     if (upErr) {
       throw new Error(`Failed to store Excel file: ${upErr.message}`);
     }
-
-    const { data: publicUrlData } = supabase.storage
+    const { error: csvErr } = await supabase.storage
       .from("exports")
-      .getPublicUrl(exportPath);
-    const excelUrl = publicUrlData.publicUrl;
+      .upload(csvPath, csvString, {
+        contentType: "text/csv",
+        upsert: true,
+      });
+    if (csvErr) {
+      throw new Error(`Failed to store CSV file: ${csvErr.message}`);
+    }
+
+    const { data: excelUrlData } = supabase.storage
+      .from("exports")
+      .getPublicUrl(excelPath);
+    const { data: csvUrlData } = supabase.storage
+      .from("exports")
+      .getPublicUrl(csvPath);
+    const excelUrl = excelUrlData.publicUrl;
+    const csvUrl = csvUrlData.publicUrl;
 
     await supabase
       .from("statements")
@@ -288,6 +303,7 @@ export async function POST(request: NextRequest) {
         status: "completed",
         parsed_data: transactions,
         excel_url: excelUrl,
+        csv_url: csvUrl,
         updated_at: new Date().toISOString(),
       })
       .eq("id", statementId);
@@ -304,6 +320,7 @@ export async function POST(request: NextRequest) {
         status: "completed",
         parsed_data: transactions,
         excel_url: excelUrl,
+        csv_url: csvUrl,
       },
     });
   } catch (err) {
@@ -329,6 +346,7 @@ async function handleDemoMode(request: NextRequest) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Transactions");
   const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  const csvString = XLSX.utils.sheet_to_csv(ws);
 
   const id = statementId || `demo-${Date.now()}`;
   const fn = filename || "demo-statement.pdf";
@@ -340,9 +358,11 @@ async function handleDemoMode(request: NextRequest) {
       status: "completed",
       parsed_data: transactions,
       excel_url: null,
+      csv_url: null,
     },
     demo: true,
     excel_base64: excelBuffer.toString("base64"),
+    csv_base64: Buffer.from(csvString, "utf-8").toString("base64"),
   });
 }
 

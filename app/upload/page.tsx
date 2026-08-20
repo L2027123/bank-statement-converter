@@ -26,6 +26,7 @@ interface Statement {
   status: string;
   parsed_data: Transaction[] | null;
   excel_url: string | null;
+  csv_url: string | null;
 }
 
 const PARSE_MESSAGES = [
@@ -39,6 +40,7 @@ export default function UploadPage() {
   const [limit, setLimit] = useState<number>(3);
   const [isDemo, setIsDemo] = useState(false);
   const [excelBase64, setExcelBase64] = useState<string | null>(null);
+  const [csvBase64, setCsvBase64] = useState<string | null>(null);
 
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
@@ -115,6 +117,7 @@ export default function UploadPage() {
     setStatement(null);
     setProgress(0);
     setExcelBase64(null);
+    setCsvBase64(null);
 
     if (!isDemo) {
       const supabase = createClient();
@@ -197,6 +200,7 @@ export default function UploadPage() {
       }
       setStatement(data.statement as Statement);
       if (data.excel_base64) setExcelBase64(data.excel_base64);
+      if (data.csv_base64) setCsvBase64(data.csv_base64);
       setProgress(100);
       setProgressTarget(100);
       setStage("done");
@@ -212,6 +216,7 @@ export default function UploadPage() {
     setStatement(null);
     setProgress(0);
     setExcelBase64(null);
+    setCsvBase64(null);
     setSelectedFile({ name: "demo-statement.pdf", size: 0 } as File);
 
     setStage("uploading");
@@ -234,6 +239,7 @@ export default function UploadPage() {
       }
       setStatement(data.statement as Statement);
       if (data.excel_base64) setExcelBase64(data.excel_base64);
+      if (data.csv_base64) setCsvBase64(data.csv_base64);
       setProgress(100);
       setProgressTarget(100);
       setStage("done");
@@ -272,6 +278,37 @@ export default function UploadPage() {
     } else {
       console.warn("No excel data available for download", { excelBase64, statement });
       alert("Excel 数据未就绪，请重试。");
+    }
+  }
+
+  function handleDownloadCSV() {
+    const baseName = statement?.filename?.replace(/\.pdf$/i, "") || "transactions";
+    if (csvBase64) {
+      try {
+        const binaryString = window.atob(csvBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = baseName + ".csv";
+        document.body.appendChild(a);
+        a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } catch (err) {
+        console.error("CSV download failed:", err);
+        alert("下载失败: " + (err instanceof Error ? err.message : String(err)));
+      }
+    } else if (statement?.csv_url) {
+      window.open(statement.csv_url, "_blank");
+    } else {
+      console.warn("No csv data available for download", { csvBase64, statement });
+      alert("CSV 数据未就绪，请重试。");
     }
   }
 
@@ -414,22 +451,40 @@ export default function UploadPage() {
                       {statement.filename} · {(statement.parsed_data ?? []).length} transactions extracted
                     </p>
                   </div>
-                  <Button variant="success" size="lg" onClick={handleDownloadExcel}>
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                      />
-                    </svg>
-                    Download Excel
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="success" size="lg" onClick={handleDownloadExcel}>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                        />
+                      </svg>
+                      Download Excel
+                    </Button>
+                    <Button variant="outline" size="lg" onClick={handleDownloadCSV}>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                        />
+                      </svg>
+                      Download CSV
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
