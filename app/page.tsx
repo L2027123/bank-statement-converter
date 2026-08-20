@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BANKS } from "@/lib/banks";
+import WaitlistForm from "@/components/WaitlistForm";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -22,6 +23,7 @@ const PLANS = [
       "Credits never expire",
     ],
     cta: "Get Started Free",
+    source: "pricing_starter",
     highlight: false,
   },
   {
@@ -36,6 +38,7 @@ const PLANS = [
       "Credits never expire",
     ],
     cta: "Get Started Free",
+    source: "pricing_pro",
     highlight: true,
   },
   {
@@ -50,6 +53,7 @@ const PLANS = [
       "Credits never expire",
     ],
     cta: "Get Started Free",
+    source: "pricing_tax",
     highlight: false,
   },
 ];
@@ -219,22 +223,30 @@ export default function Home() {
           </div>
 
           <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border bg-white p-6 sm:p-8 shadow-sm">
-            <svg
-              className="mb-4 h-8 w-8 text-brand/40"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
-            </svg>
-
-            <p className="text-lg font-medium leading-relaxed text-foreground sm:text-xl">
-              &ldquo;Parse failed? You pay nothing. Credits are only deducted after successful extraction.&rdquo;
-            </p>
-
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-              Unlike monthly subscriptions, buy credits and use them whenever you need — perfect for tax season crunch or year-end catch-up.
-            </p>
+            <ul className="space-y-4">
+              {[
+                "Try 3 statements free — no signup, no credit card",
+                "Parse failed? No credits deducted",
+                "Currently optimized for Chase, BofA, Wells Fargo",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-3 text-base text-foreground sm:text-lg">
+                  <svg
+                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-success"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
@@ -296,20 +308,16 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className="mt-6 w-full"
-                  variant={plan.highlight ? "default" : "outline"}
-                  onClick={() => router.push("/login?redirect=/upload")}
-                >
-                  {plan.cta}
-                </Button>
+                <div className="mt-6">
+                  <WaitlistForm source={plan.source} />
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Credit purchases launching soon. For now, try 3 free conversions — no signup, no credit card.
+          Credit system launching this week. Join the waitlist above to be notified first.
           <span className="mx-2">·</span>
           <Link
             href="/alternatives/bankstatementconverter"

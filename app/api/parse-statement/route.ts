@@ -260,6 +260,29 @@ export async function POST(request: NextRequest) {
       transactions = parseRuleBased(text);
     }
 
+    // Validation: don't deduct credits if parsing yielded no usable transactions.
+    // This enforces the "Parse failed? No credits deducted" promise on the homepage.
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      throw new Error(
+        "No transactions could be extracted from this statement. Please try a different PDF — you were not charged for this attempt."
+      );
+    }
+
+    // Also reject if every transaction has null for date, description, and amounts
+    // (means the parser returned junk objects, not real transactions).
+    const hasAnyUsableField = transactions.some(
+      (t) =>
+        t.date ||
+        (t.description && t.description.length > 0) ||
+        t.debit != null ||
+        t.credit != null
+    );
+    if (!hasAnyUsableField) {
+      throw new Error(
+        "The parsed result was empty or invalid. You were not charged for this attempt."
+      );
+    }
+
     const ws = XLSX.utils.json_to_sheet(transactions);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
