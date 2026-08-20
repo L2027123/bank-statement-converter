@@ -10,7 +10,7 @@ Your bookkeeping team processes **dozens of client bank statements every month**
 ## Our Solution
 
 **Bank Statement Converter** — AI-powered PDF → Excel in 3 seconds:
-- Upload Chase / Wells Fargo / BofA / 52 US bank PDFs
+- Upload Chase, Wells Fargo, Bank of America, and other major US bank PDFs
 - AI extracts every transaction (date, description, debit, credit, balance)
 - Download clean Excel, ready for reconciliation
 - Built on DeepSeek API for accuracy

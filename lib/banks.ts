@@ -1,6 +1,6 @@
 /**
- * 50+ banks supported by Bank Statement Converter.
- * Each entry powers a SEO landing page at /bank/[slug].
+ * Major US banks covered by Bank Statement Converter's SEO landing pages.
+ * Each entry powers a dedicated page at /bank/[slug].
  */
 
 export interface BankInfo {

@@ -14,7 +14,7 @@ Hi Big Accountants team,
 
 I noticed you're already marketing AI-powered bookkeeping — I have a tool that fits perfectly into your workflow, and I'd like to offer you a **partner program**.
 
-**What it is**: An AI-powered bank statement → Excel converter. Your team uploads Chase / Wells Fargo / BofA PDFs, gets back clean Excel in 3 seconds. No more manual retyping 30+ minutes per statement.
+**What it is**: An AI-powered bank statement → Excel converter. Your team uploads Chase, Wells Fargo, or Bank of America PDFs, gets back clean Excel in 3 seconds. No more manual retyping 30+ minutes per statement.
 
 **Partnership offer**:
 - **Option A — Revenue share**: 30% recurring commission on every client you refer. Client pays $19/month → you get $5.70/month for as long as they stay.
@@ -41,7 +41,7 @@ Hi Botkeeper team,
 
 Botkeeper's AI bookkeeping platform is impressive. I've built a complementary tool that could fit naturally into your accounting firm partners' workflow, and I'd like to explore a partnership.
 
-**What I built**: AI bank statement → Excel converter. Drop in a Chase / Wells Fargo / BofA PDF, get clean Excel in 3 seconds. 52 US banks supported.
+**What I built**: AI bank statement → Excel converter. Drop in a Chase, Wells Fargo, or Bank of America PDF, get clean Excel in 3 seconds. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks.
 
 **How it complements Botkeeper**: Botkeeper handles the heavy bookkeeping lifting. My tool solves the edge case where clients hand you raw bank PDFs that don't fit your automated pipeline — a "first pass" pre-processing step before Botkeeper takes over.
 
@@ -70,7 +70,7 @@ Your small business bookkeeping clients need fast, accurate bank statement proce
 
 **Problem your team faces**: Manual PDF → Excel = 30+ min per statement, error-prone, scales badly as you add clients.
 
-**Solution I built**: Upload PDF → AI extracts every transaction → download clean Excel. Supports 52 US banks. Free tier = 3 statements/month for your clients.
+**Solution I built**: Upload PDF → AI extracts every transaction → download clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks. Free tier = 3 statements/month for your clients.
 
 **Partnership options**:
 1. **White label**: Your team uses it at $20/month for 50 statements (50% off)
@@ -93,7 +93,7 @@ Hi AccountingDepartment.com team,
 
 With your large client base, your bookkeepers handle dozens of bank PDFs every month. The manual retyping step alone is a measurable time sink. I've built an AI tool that does it in 3 seconds, and I'd like to offer you a partnership.
 
-**What it does**: Upload Chase / Wells Fargo / BofA PDF → AI extracts every transaction → download clean Excel. Supports 52 US banks.
+**What it does**: Upload Chase, Wells Fargo, or Bank of America PDF → AI extracts every transaction → download clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks.
 
 **Partnership offer**:
 - **Revenue share**: 30% recurring commission on every referred client
@@ -118,7 +118,7 @@ Hi Intellgus team,
 
 Your offshore accounting teams process US bank statements daily. Every minute per statement becomes hours across a day. I've built an AI tool that automates the extraction, and I'd like to offer you a partnership.
 
-**What it does**: Upload PDF → AI extracts every transaction in 3 seconds → download clean Excel. Built on DeepSeek, supports 52 US banks.
+**What it does**: Upload PDF → AI extracts every transaction in 3 seconds → download clean Excel. Built on DeepSeek. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks.
 
 **Partnership offer**:
 - **White label**: Your offshore team uses it at $20/month for 50 statements (50% off)
@@ -141,7 +141,7 @@ Hi Numerawise team,
 
 Your US bookkeeping clients need fast, accurate bank statement processing. I've built an AI tool that does it in 3 seconds, and I'd like to offer you a partnership.
 
-**What it does**: Upload PDF → AI extracts transactions → download Excel. 52 US banks supported. Free tier = 3 statements/month for clients.
+**What it does**: Upload PDF → AI extracts transactions → download Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks. Free tier = 3 statements/month for clients.
 
 **Partnership options**:
 1. Revenue share: 30% recurring on referred clients
@@ -164,7 +164,7 @@ Hi inDinero team,
 
 With your full-service back office, your team processes a high volume of client bank statements. The manual PDF → Excel step is real time per client. I've built an AI tool that does it in 3 seconds, and I'd like to offer you a partnership.
 
-**What it does**: Upload PDF → AI extracts every transaction → download clean Excel. Supports 52 US banks.
+**What it does**: Upload PDF → AI extracts every transaction → download clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks.
 
 **Partnership offer**:
 - **Revenue share**: 30% recurring on every referred client

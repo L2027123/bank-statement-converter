@@ -118,7 +118,7 @@ ${rows}
 
 ${allPassed ? "- [x] Production healthy — no action needed" : "- [ ] Investigate failed checks (check Vercel deployment logs)"}
 - [ ] Reddit: 5 min karma-building in r/accounting (genuine comments + upvotes, manual only)
-- [ ] SEO: Google natural crawl in progress, 1-2 weeks to index 52 bank pages
+- [ ] SEO: Google natural crawl in progress, 1-2 weeks to index bank landing pages
 - [ ] Find 5-10 US beta testers (friends, LinkedIn, accounting forums, manual outreach only)
 
 ### Notes

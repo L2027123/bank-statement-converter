@@ -84,14 +84,13 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand/5 to-white" />
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
           <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-            AI-powered · 500+ banks supported
+            AI-powered · Chase, Wells Fargo, BofA & more
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             Convert Bank Statements to Excel in Seconds
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-            AI-powered parser for Chase, Wells Fargo, Bank of America, and 500+
-            banks. Upload a PDF — get a clean Excel file back.
+            AI-powered parser for Chase, Wells Fargo, Bank of America, and other major US banks. Upload a PDF — get a clean Excel file back.
           </p>
 
           {/* Upload area */}

@@ -1,6 +1,6 @@
 # Bank Statement Converter
 
-Convert bank statement PDFs to Excel in seconds. An AI-powered parser for Chase, Wells Fargo, Bank of America, Citi, Capital One, and 500+ banks.
+Convert bank statement PDFs to Excel in seconds. An AI-powered parser for Chase, Wells Fargo, Bank of America, Citi, Capital One, and other major US banks.
 
 ## Tech stack
 

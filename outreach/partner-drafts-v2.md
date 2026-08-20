@@ -15,12 +15,12 @@ Hi Robert,
 
 I saw Accounting Lab serves over 3,000 small business clients and prepares 10,000+ tax returns annually — that's serious volume. I'm guessing your team processes a lot of bank statements manually during tax season.
 
-I built a free tool that converts Chase / Wells Fargo / BofA bank statement PDFs to clean Excel in 3 seconds. No more manual retyping of dates, descriptions, debits, credits. Your team uploads the PDF, gets back a ready-for-reconciliation Excel file.
+I built a free tool that converts Chase, Wells Fargo, and Bank of America bank statement PDFs to clean Excel in 3 seconds. No more manual retyping of dates, descriptions, debits, credits. Your team uploads the PDF, gets back a ready-for-reconciliation Excel file.
 
 **Why this matters for your firm**:
 - Save 30+ minutes per statement × hundreds of clients = real hours saved
 - Free tier: 3 statements/month, no credit card required
-- Supports 52 US banks
+- Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks
 - Try it now, no signup: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
 **Partnership option if it works for you**:
@@ -43,7 +43,7 @@ Hi Alan,
 
 I found your CPA firm through the ECFA directory — you serve small Christian nonprofit organizations with accounting and tax services. Nonprofits often hand you bank statements in PDF format, and retyping those into Excel or QuickBooks is pure grunt work.
 
-I built a free tool that does it in 3 seconds: upload the PDF, get clean Excel back with date/description/debit/credit/balance columns. Supports 52 US banks.
+I built a free tool that does it in 3 seconds: upload the PDF, get clean Excel back with date/description/debit/credit/balance columns. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks.
 
 **Free for your firm**:
 - 3 statements/month at no cost, no credit card
@@ -66,8 +66,8 @@ Hi BakerBookkeeps team,
 As a virtual bookkeeping firm, you're processing client bank statements every day. The manual PDF → Excel step is probably 30+ minutes per statement. I built a tool that does it in 3 seconds.
 
 **What it does**:
-- Upload Chase / Wells Fargo / BofA PDF → AI extracts every transaction → download clean Excel
-- 52 US banks supported
+- Upload Chase, Wells Fargo, or Bank of America PDF → AI extracts every transaction → download clean Excel
+- Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks
 - Free tier: 3 statements/month, no credit card
 
 **Try it now (no login)**: https://bank-statement-converter-lemon.vercel.app/?demo=true
@@ -94,9 +94,9 @@ As a regional CPA firm, your bookkeepers handle client bank statements regularly
 
 I built a free tool that does it in 3 seconds. Upload the PDF, get clean Excel back.
 
-**Free to try, no credit card**: https://bank-statement-converter-lemon.verel.app/?demo=true
+**Free to try, no credit card**: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
-Supports 52 US banks including Chase, Wells Fargo, BofA, Citi, Capital One.
+Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, and other major US banks.
 
 **If it works for your firm**:
 - White-label rate: $20/month for 50 statements (50% off retail)
@@ -118,7 +118,7 @@ Hi Ignite Spot team,
 
 Your QuickBooks Online specialists handle monthly bookkeeping and reconciliations for service-based businesses. The first step — getting client bank statement data into usable format — is often manual and slow.
 
-I built a tool that converts bank statement PDFs to clean Excel in 3 seconds. 52 US banks supported. Free tier = 3 statements/month, no credit card.
+I built a tool that converts bank statement PDFs to clean Excel in 3 seconds. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, and other major US banks. Free tier = 3 statements/month, no credit card.
 
 **Demo (no login)**: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
@@ -142,7 +142,7 @@ Hi Whiz Consulting team,
 
 Your outsourced accounting team handles small business clients' books — and that means processing a lot of bank statement PDFs. Manual retyping is 30+ minutes per statement.
 
-I built a tool that does it in 3 seconds. Upload PDF → AI extracts every transaction → download clean Excel. 52 US banks supported.
+I built a tool that does it in 3 seconds. Upload PDF → AI extracts every transaction → download clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, and other major US banks.
 
 **Free to try, no credit card**: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
@@ -171,7 +171,7 @@ I built a free tool that does it in 3 seconds. Upload the PDF, get clean Excel w
 
 **Free to try**: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
-Supports 52 US banks. No credit card required.
+Works with Chase, Wells Fargo, Bank of America, and other major US banks. No credit card required.
 
 If it saves you time, I can offer:
 - White-label rate: $20/month for 50 statements

@@ -12,7 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Bank Statement Converter — PDF to Excel in Seconds",
   description:
-    "AI-powered parser for Chase, Wells Fargo, Bank of America, and 500+ banks. Convert your bank statements to Excel in seconds.",
+    "AI-powered parser for Chase, Wells Fargo, Bank of America, and other major US banks. Convert your bank statements to Excel in seconds.",
 };
 
 export default function RootLayout({

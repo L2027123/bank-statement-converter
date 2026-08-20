@@ -14,9 +14,9 @@ Hi,
 
 Noticed Big Accountants already uses AI-powered bookkeeping — I built something that might fit naturally into your workflow.
 
-**Problem it solves**: When your team processes client bank statements (Chase, Wells Fargo, BofA), someone is manually retyping transactions into Excel. 30+ minutes per statement, error-prone, scales badly.
+**Problem it solves**: When your team processes client bank statements (Chase, Wells Fargo, Bank of America), someone is manually retyping transactions into Excel. 30+ minutes per statement, error-prone, scales badly.
 
-**What I built**: Upload the PDF → AI extracts every transaction → download Excel in 3 seconds. Supports Chase / Wells Fargo / BofA / Citi / Capital One / 47 more. Built-in DeepSeek API for parsing accuracy.
+**What I built**: Upload the PDF → AI extracts every transaction → download Excel in 3 seconds. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks. Built on DeepSeek API for parsing accuracy.
 
 **30-second demo**: https://bank-statement-converter-lemon.vercel.app/?demo=true
 
@@ -37,7 +37,7 @@ Hi,
 
 I saw Botkeeper's AI bookkeeping platform and have a question — do your accounting-firm clients still occasionally hand you raw bank PDFs that don't fit into your automated pipeline?
 
-I built a small tool that solves exactly that edge case: drop in a Chase / Wells Fargo / BofA PDF, get back clean Excel with date / description / debit / credit / balance columns in 3 seconds. 52 US banks supported.
+I built a small tool that solves exactly that edge case: drop in a Chase, Wells Fargo, or Bank of America PDF, get back clean Excel with date / description / debit / credit / balance columns in 3 seconds.
 
 Free tier: 3 statements/month, no credit card. Could be useful as a "first pass" tool your clients run themselves before handing data to your team.
 
@@ -59,11 +59,11 @@ Hi Veridis team,
 
 For your small business bookkeeping clients, the monthly bank-statement → Excel step probably eats real time. I built a tool that does it in 3 seconds with AI:
 
-- Upload Chase / Wells Fargo / BofA PDF
+- Upload Chase, Wells Fargo, or Bank of America PDF
 - AI extracts every transaction (date, description, debit, credit, balance)
 - Download clean Excel, ready for reconciliation
 
-Supports 52 US banks. Free tier = 3 statements/month, no credit card.
+Free tier = 3 statements/month, no credit card.
 
 Demo (no login required): https://bank-statement-converter-lemon.vercel.app/?demo=true
 
@@ -83,7 +83,7 @@ Hi,
 
 With AccountingDepartment.com's large client base, your bookkeepers probably handle dozens of bank PDFs every month. The manual retyping step alone — date, description, debit, credit, balance × 30+ rows per statement — is a measurable time sink.
 
-I built a tool that does it in 3 seconds: upload PDF → AI extracts every transaction → download clean Excel. Supports 52 US banks (Chase, Wells Fargo, BofA, Citi, Capital One, US Bank, PNC, Truist, and 45 more). Uses DeepSeek for accuracy.
+I built a tool that does it in 3 seconds: upload PDF → AI extracts every transaction → download clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks. Uses DeepSeek for accuracy.
 
 Free tier: 3 statements/month, no credit card. Pro tier: 50/month for $19.
 
@@ -105,11 +105,11 @@ Hi,
 
 Your offshore accounting teams process US bank statements daily — every minute per statement becomes hours across a day. I built a tool that automates the extraction:
 
-- Upload Chase / Wells Fargo / BofA PDF
+- Upload Chase, Wells Fargo, or Bank of America PDF
 - AI extracts every transaction in 3 seconds
 - Output: clean Excel with date / description / debit / credit / balance
 
-Built on DeepSeek API, supports 52 US banks. Free tier = 3 statements/month, no credit card.
+Built on DeepSeek API. Free tier = 3 statements/month, no credit card.
 
 Demo (no login): https://bank-statement-converter-lemon.vercel.app/?demo=true
 
@@ -129,7 +129,7 @@ Hi Numerawise team,
 
 For your US bookkeeping clients, the monthly bank statement → Excel step is probably handled manually. I built a tool that automates it:
 
-- Upload PDF (Chase, Wells Fargo, BofA, 52 banks supported)
+- Upload PDF (Chase, Wells Fargo, Bank of America, and other major US banks)
 - AI extracts transactions in 3 seconds
 - Download clean Excel ready for reconciliation
 
@@ -153,7 +153,7 @@ Hi,
 
 With inDinero's full-service back office, your team processes a high volume of client bank statements monthly. The manual PDF → Excel step alone (date, description, debit, credit, balance × 30+ rows per statement) is real time per client.
 
-I built a small tool that does it in 3 seconds with AI: upload PDF, get clean Excel. Supports 52 US banks (Chase, Wells Fargo, BofA, Citi, Capital One, US Bank, PNC, Truist, and 45 more). Built on DeepSeek for accuracy.
+I built a small tool that does it in 3 seconds with AI: upload PDF, get clean Excel. Works with Chase, Wells Fargo, Bank of America, Citi, Capital One, US Bank, PNC, Truist, and other major US banks. Built on DeepSeek for accuracy.
 
 Free tier: 3 statements/month, no credit card. Pro: 50/month for $19.
 
