@@ -21,7 +21,7 @@ const PLANS = [
       "No subscription, no auto-renew",
       "Credits never expire",
     ],
-    cta: "Buy Starter",
+    cta: "Get Started Free",
     highlight: false,
   },
   {
@@ -35,7 +35,7 @@ const PLANS = [
       "Priority email support",
       "Credits never expire",
     ],
-    cta: "Buy Pro",
+    cta: "Get Started Free",
     highlight: true,
   },
   {
@@ -49,7 +49,7 @@ const PLANS = [
       "Excel & CSV export",
       "Credits never expire",
     ],
-    cta: "Buy Tax Season Pack",
+    cta: "Get Started Free",
     highlight: false,
   },
 ];
@@ -307,6 +307,10 @@ export default function Home() {
             </Card>
           ))}
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Credit purchases launching soon. For now, try 3 free conversions — no signup, no credit card.
+        </p>
       </section>
 
       {/* Supported Banks */}
