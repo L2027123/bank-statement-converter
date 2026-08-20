@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import pg from "pg";
+import { createClient } from "@supabase/supabase-js";
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "niuniu7626";
 
-// Direct DB connection — bypasses RLS (equivalent to service role key).
-// Used because we dropped the authenticated SELECT policy on waitlist
-// and don't have SUPABASE_SERVICE_ROLE_KEY in env.
-const CONNECTION_STRING = `postgresql://postgres:${process.env.SUPABASE_DB_PASSWORD}@db.qdrcofomnznybbgloqsr.supabase.co:5432/postgres`;
+// Uses service role key if available, falls back to a SECURITY DEFINER RPC.
+// The RPC get_waitlist() bypasses RLS safely — only callable via API with admin password.
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface WaitlistEntry {
   id: string;
@@ -23,18 +25,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let client: pg.Client | null = null;
   try {
-    client = new pg.Client({ connectionString: CONNECTION_STRING });
-    await client.connect();
+    // Call the SECURITY DEFINER RPC that bypasses RLS.
+    const { data, error } = await supabase.rpc("get_waitlist");
 
-    const { rows } = await client.query<WaitlistEntry>(
-      `SELECT id, email, source, created_at FROM waitlist ORDER BY created_at DESC LIMIT 500;`
-    );
+    if (error) {
+      throw new Error(`RPC failed: ${error.message}`);
+    }
+
+    const entries = (data || []) as WaitlistEntry[];
 
     return NextResponse.json({
-      total: rows.length,
-      entries: rows,
+      total: entries.length,
+      entries,
     });
   } catch (err) {
     console.error("admin/waitlist error:", err);
@@ -42,7 +45,5 @@ export async function GET(request: NextRequest) {
       { error: err instanceof Error ? err.message : "Unknown error" },
       { status: 500 }
     );
-  } finally {
-    if (client) await client.end().catch(() => {});
   }
 }
