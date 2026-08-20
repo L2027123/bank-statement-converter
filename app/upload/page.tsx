@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/client";
 import { getEffectiveCredits, type Profile } from "@/lib/credits";
+import RequestBankForm from "@/components/RequestBankForm";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -18,6 +19,15 @@ interface Transaction {
   debit: number | null;
   credit: number | null;
   balance: number | null;
+}
+
+interface BalanceCheck {
+  verified: boolean;
+  opening: number | null;
+  closing: number | null;
+  calculated: number | null;
+  delta: number | null;
+  message: string;
 }
 
 interface Statement {
@@ -47,9 +57,11 @@ export default function UploadPage() {
   const [progressTarget, setProgressTarget] = useState(0);
   const [parseMsg, setParseMsg] = useState(PARSE_MESSAGES[0]);
   const [statement, setStatement] = useState<Statement | null>(null);
+  const [balanceCheck, setBalanceCheck] = useState<BalanceCheck | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showBankRequest, setShowBankRequest] = useState(false);
 
   const checkDemo = useCallback(() => {
     if (typeof window === "undefined") return false;
@@ -118,6 +130,8 @@ export default function UploadPage() {
     setProgress(0);
     setExcelBase64(null);
     setCsvBase64(null);
+    setBalanceCheck(null);
+    setShowBankRequest(false);
 
     if (!isDemo) {
       const supabase = createClient();
@@ -201,6 +215,7 @@ export default function UploadPage() {
       setStatement(data.statement as Statement);
       if (data.excel_base64) setExcelBase64(data.excel_base64);
       if (data.csv_base64) setCsvBase64(data.csv_base64);
+      if (data.balanceCheck) setBalanceCheck(data.balanceCheck as BalanceCheck);
       setProgress(100);
       setProgressTarget(100);
       setStage("done");
@@ -217,6 +232,8 @@ export default function UploadPage() {
     setProgress(0);
     setExcelBase64(null);
     setCsvBase64(null);
+    setBalanceCheck(null);
+    setShowBankRequest(false);
     setSelectedFile({ name: "demo-statement.pdf", size: 0 } as File);
 
     setStage("uploading");
@@ -240,6 +257,7 @@ export default function UploadPage() {
       setStatement(data.statement as Statement);
       if (data.excel_base64) setExcelBase64(data.excel_base64);
       if (data.csv_base64) setCsvBase64(data.csv_base64);
+      if (data.balanceCheck) setBalanceCheck(data.balanceCheck as BalanceCheck);
       setProgress(100);
       setProgressTarget(100);
       setStage("done");
@@ -502,6 +520,35 @@ export default function UploadPage() {
                     </Button>
                   </div>
                 </div>
+
+                {/* F1 — Balance verification banner */}
+                {balanceCheck && (
+                  <div
+                    className={`mt-4 rounded-lg border p-3 text-sm ${
+                      balanceCheck.verified
+                        ? "border-success/30 bg-success/5 text-success"
+                        : balanceCheck.opening == null || balanceCheck.closing == null
+                        ? "border-border bg-muted text-muted-foreground"
+                        : "border-warning/30 bg-warning/5 text-warning"
+                    }`}
+                  >
+                    <p className="font-medium">
+                      {balanceCheck.verified
+                        ? "✓ Balance Verified"
+                        : balanceCheck.opening == null || balanceCheck.closing == null
+                        ? "ℹ Balance check skipped"
+                        : "⚠ Balance mismatch detected, please review"}
+                    </p>
+                    <p className="mt-1 text-xs opacity-90">{balanceCheck.message}</p>
+                    {(balanceCheck.opening != null || balanceCheck.closing != null) && (
+                      <p className="mt-1 text-xs opacity-75">
+                        Opening: {formatUSD(balanceCheck.opening)} · Calculated closing:{" "}
+                        {formatUSD(balanceCheck.calculated)} · Statement closing:{" "}
+                        {formatUSD(balanceCheck.closing)}
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -580,10 +627,31 @@ export default function UploadPage() {
               <Button variant="outline" className="mt-6" onClick={() => setStage("idle")}>
                 Try again
               </Button>
+
+              {/* F2 — Request a bank button */}
+              {!showBankRequest && (
+                <button
+                  type="button"
+                  onClick={() => setShowBankRequest(true)}
+                  className="mt-4 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  Your bank not supported? Request it
+                </button>
+              )}
+              {showBankRequest && (
+                <div className="mt-6 w-full max-w-md text-left">
+                  <RequestBankForm onSuccess={() => setShowBankRequest(false)} />
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
       </main>
     </div>
   );
+}
+
+function formatUSD(value: number | null): string {
+  if (value == null) return "—";
+  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }

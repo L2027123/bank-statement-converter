@@ -12,8 +12,9 @@ const supabase = createClient(
 
 interface WaitlistEntry {
   id: string;
-  email: string;
+  email: string | null;
   source: string;
+  metadata: { bank_name?: string } | null;
   created_at: string;
 }
 

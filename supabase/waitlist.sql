@@ -1,8 +1,11 @@
--- Waitlist table for collecting emails before Stripe goes live
+-- Waitlist table for collecting emails before Stripe goes live.
+-- Also used for F2 "Request a bank" entries (source='bank_request',
+-- metadata.bank_name stores the requested bank, email is optional).
 CREATE TABLE IF NOT EXISTS waitlist (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT UNIQUE,
   source TEXT DEFAULT 'landing_page',
+  metadata jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -17,3 +20,5 @@ CREATE POLICY "Allow anonymous insert" ON waitlist
 DROP POLICY IF EXISTS "Allow admin select" ON waitlist;
 CREATE POLICY "Allow admin select" ON waitlist
   FOR SELECT TO authenticated USING (true);
+
+CREATE INDEX IF NOT EXISTS waitlist_source_idx ON waitlist(source);

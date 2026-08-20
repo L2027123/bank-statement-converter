@@ -14,13 +14,28 @@ interface Transaction {
   balance: number | null;
 }
 
+interface ParsedResult {
+  transactions: Transaction[];
+  opening_balance: number | null;
+  closing_balance: number | null;
+}
+
+interface BalanceCheck {
+  verified: boolean;
+  opening: number | null;
+  closing: number | null;
+  calculated: number | null;
+  delta: number | null;
+  message: string;
+}
+
 const SYSTEM_PROMPT =
-  "You are a bank statement parsing expert. Extract all transaction records from the following bank statement text. Return a JSON array where each object has: date (YYYY-MM-DD), description (string), debit (number or null), credit (number or null), balance (number or null). Return ONLY the JSON array, no other text.";
+  "You are a bank statement parsing expert. Extract all transaction records from the following bank statement text. Return a JSON object with this shape: { \"opening_balance\": number_or_null, \"closing_balance\": number_or_null, \"transactions\": [ { \"date\": \"YYYY-MM-DD\", \"description\": \"string\", \"debit\": number_or_null, \"credit\": number_or_null, \"balance\": number_or_null } ] }. Opening and closing balance should be the numbers shown on the statement (null if not present). Return ONLY the JSON object, no other text.";
 
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
 const DEEPSEEK_MODEL = "deepseek-chat";
 
-async function parseWithAI(text: string): Promise<Transaction[]> {
+async function parseWithAI(text: string): Promise<ParsedResult> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
     throw new Error("DeepSeek API key not configured. Set DEEPSEEK_API_KEY env var.");
@@ -51,10 +66,10 @@ async function parseWithAI(text: string): Promise<Transaction[]> {
   const responseText: string =
     aiData?.choices?.[0]?.message?.content ?? "";
 
-  return extractTransactions(responseText);
+  return extractParsedResult(responseText);
 }
 
-function parseRuleBased(text: string): Transaction[] {
+function parseRuleBased(text: string): ParsedResult {
   const transactions: Transaction[] = [];
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
 
@@ -62,6 +77,10 @@ function parseRuleBased(text: string): Transaction[] {
   const amountPattern = /\$?\s?([\d,]+(?:\.\d{2})?)/g;
 
   const skipPatterns = /^(statement period|opening balance|closing balance|account number|statement date|balance as of|daily balance|average balance)/i;
+
+  // Extract opening / closing balance from full text via regex.
+  const openingBalance = extractBalanceFromText(text, /opening\s+balance[:\s]+\$?\s?([\d,]+(?:\.\d{1,2})?)/i);
+  const closingBalance = extractBalanceFromText(text, /closing\s+balance[:\s]+\$?\s?([\d,]+(?:\.\d{1,2})?)/i);
 
   for (const line of lines) {
     const dateMatch = line.match(datePattern);
@@ -135,7 +154,14 @@ function parseRuleBased(text: string): Transaction[] {
     }
   }
 
-  return transactions;
+  return { transactions, opening_balance: openingBalance, closing_balance: closingBalance };
+}
+
+function extractBalanceFromText(text: string, pattern: RegExp): number | null {
+  const m = text.match(pattern);
+  if (!m || !m[1]) return null;
+  const val = parseFloat(m[1].replace(/,/g, ""));
+  return isNaN(val) ? null : val;
 }
 
 const DEMO_USER_ID = "00000000-0000-0000-0000-000000000000";
@@ -252,13 +278,15 @@ export async function POST(request: NextRequest) {
       throw new Error("No text could be extracted from this PDF (it may be a scanned image).");
     }
 
-    let transactions: Transaction[];
+    let parsed: ParsedResult;
 
     try {
-      transactions = await parseWithAI(text);
+      parsed = await parseWithAI(text);
     } catch {
-      transactions = parseRuleBased(text);
+      parsed = parseRuleBased(text);
     }
+
+    const transactions = parsed.transactions;
 
     // Validation: don't deduct credits if parsing yielded no usable transactions.
     // This enforces the "Parse failed? No credits deducted" promise on the homepage.
@@ -283,7 +311,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // F1 — Balance auto-verification.
+    const balanceCheck = computeBalanceCheck(
+      transactions,
+      parsed.opening_balance,
+      parsed.closing_balance
+    );
+
     const ws = XLSX.utils.json_to_sheet(transactions);
+    // Append a balance verification marker row at the bottom of the sheet.
+    XLSX.utils.sheet_add_aoa(
+      ws,
+      [[balanceCheck.verified ? "✓ Balance Verified" : "⚠ Balance mismatch detected, please review"]],
+      { origin: -1 }
+    );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
@@ -337,6 +378,7 @@ export async function POST(request: NextRequest) {
         excel_url: excelPath,
         csv_url: csvPath,
       },
+      balanceCheck,
     });
   } catch (err) {
     await supabase
@@ -355,9 +397,22 @@ async function handleDemoMode(request: NextRequest) {
   };
 
   const text = DEMO_SAMPLE_TEXT;
-  const transactions = parseRuleBased(text);
+  const parsed = parseRuleBased(text);
+  const transactions = parsed.transactions;
+
+  const balanceCheck = computeBalanceCheck(
+    transactions,
+    parsed.opening_balance,
+    parsed.closing_balance
+  );
 
   const ws = XLSX.utils.json_to_sheet(transactions);
+  // Append balance verification marker to demo Excel as well.
+  XLSX.utils.sheet_add_aoa(
+    ws,
+    [[balanceCheck.verified ? "✓ Balance Verified" : "⚠ Balance mismatch detected, please review"]],
+    { origin: -1 }
+  );
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Transactions");
   const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
@@ -375,35 +430,104 @@ async function handleDemoMode(request: NextRequest) {
       excel_url: null,
       csv_url: null,
     },
+    balanceCheck,
     demo: true,
     excel_base64: excelBuffer.toString("base64"),
     csv_base64: Buffer.from(csvString, "utf-8").toString("base64"),
   });
 }
 
-function extractTransactions(text: string): Transaction[] {
-  // DeepSeek 可能把 JSON 包在 markdown 代码块里（```json ... ``` 或 ``` ... ```），先剥离。
+// F1 — verify opening + sum(debits/credits) == closing.
+// Tolerates a 0.01 rounding error.
+function computeBalanceCheck(
+  transactions: Transaction[],
+  opening: number | null,
+  closing: number | null
+): BalanceCheck {
+  if (opening == null || closing == null) {
+    return {
+      verified: false,
+      opening,
+      closing,
+      calculated: null,
+      delta: null,
+      message: "Opening or closing balance not found on statement — skipped.",
+    };
+  }
+  const sum = transactions.reduce((acc, t) => {
+    return acc + (t.credit ?? 0) - (t.debit ?? 0);
+  }, 0);
+  const calculated = opening + sum;
+  const delta = Math.round((calculated - closing) * 100) / 100;
+  const verified = Math.abs(delta) < 0.01;
+  return {
+    verified,
+    opening,
+    closing,
+    calculated,
+    delta,
+    message: verified
+      ? "Balance verified — opening + transactions = closing."
+      : `Balance mismatch detected, please review (off by ${delta.toFixed(2)}).`,
+  };
+}
+
+function extractParsedResult(text: string): ParsedResult {
+  // DeepSeek may wrap JSON in markdown code blocks (```json ... ```), strip them first.
   const cleaned = text
-    .replace(/^[^\[]*/, "")
     .replace(/```(?:json)?/gi, "")
     .trim();
-  const start = cleaned.indexOf("[");
-  const end = cleaned.lastIndexOf("]");
-  if (start === -1 || end === -1 || end <= start) {
-    return [];
+
+  // Try parsing as an object first (new format).
+  const objStart = cleaned.indexOf("{");
+  const objEnd = cleaned.lastIndexOf("}");
+  if (objStart !== -1 && objEnd !== -1 && objEnd > objStart) {
+    const jsonText = cleaned.slice(objStart, objEnd + 1);
+    try {
+      const obj = JSON.parse(jsonText);
+      if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+        const txns = Array.isArray(obj.transactions) ? obj.transactions : [];
+        const transactions = txns.map((t: any) => ({
+          date: t.date ?? null,
+          description: t.description ?? null,
+          debit: t.debit == null ? null : Number(t.debit),
+          credit: t.credit == null ? null : Number(t.credit),
+          balance: t.balance == null ? null : Number(t.balance),
+        }));
+        return {
+          transactions,
+          opening_balance:
+            obj.opening_balance == null ? null : Number(obj.opening_balance),
+          closing_balance:
+            obj.closing_balance == null ? null : Number(obj.closing_balance),
+        };
+      }
+    } catch {
+      // fall through to array-format parsing below
+    }
   }
-  const jsonText = cleaned.slice(start, end + 1);
-  try {
-    const parsed = JSON.parse(jsonText);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((t: any) => ({
-      date: t.date ?? null,
-      description: t.description ?? null,
-      debit: t.debit == null ? null : Number(t.debit),
-      credit: t.credit == null ? null : Number(t.credit),
-      balance: t.balance == null ? null : Number(t.balance),
-    }));
-  } catch {
-    return [];
+
+  // Backward compat: AI may still return a JSON array (no opening/closing).
+  const arrStart = cleaned.indexOf("[");
+  const arrEnd = cleaned.lastIndexOf("]");
+  if (arrStart !== -1 && arrEnd !== -1 && arrEnd > arrStart) {
+    const jsonText = cleaned.slice(arrStart, arrEnd + 1);
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (Array.isArray(parsed)) {
+        const transactions = parsed.map((t: any) => ({
+          date: t.date ?? null,
+          description: t.description ?? null,
+          debit: t.debit == null ? null : Number(t.debit),
+          credit: t.credit == null ? null : Number(t.credit),
+          balance: t.balance == null ? null : Number(t.balance),
+        }));
+        return { transactions, opening_balance: null, closing_balance: null };
+      }
+    } catch {
+      // fall through
+    }
   }
+
+  return { transactions: [], opening_balance: null, closing_balance: null };
 }

@@ -32,8 +32,9 @@ interface ContactData {
 
 interface WaitlistEntry {
   id: string;
-  email: string;
+  email: string | null;
   source: string;
+  metadata: { bank_name?: string } | null;
   created_at: string;
 }
 
@@ -455,6 +456,7 @@ function WaitlistTab({
             <tr>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Source</th>
+              <th className="px-4 py-3 font-medium">Requested Bank</th>
               <th className="px-4 py-3 font-medium">Joined</th>
             </tr>
           </thead>
@@ -462,11 +464,24 @@ function WaitlistTab({
             {data.entries.map((e) => (
               <tr key={e.id} className="text-foreground">
                 <td className="px-4 py-3">
-                  <a href={`mailto:${e.email}`} className="text-brand hover:underline">
-                    {e.email}
-                  </a>
+                  {e.email ? (
+                    <a href={`mailto:${e.email}`} className="text-brand hover:underline">
+                      {e.email}
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{e.source}</td>
+                <td className="px-4 py-3">
+                  {e.metadata?.bank_name ? (
+                    <span className="rounded bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
+                      {e.metadata.bank_name}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                   {new Date(e.created_at).toLocaleString("en-US", {
                     dateStyle: "short",
