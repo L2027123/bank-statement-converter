@@ -311,22 +311,14 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to store CSV file: ${csvErr.message}`);
     }
 
-    const { data: excelUrlData } = supabase.storage
-      .from("exports")
-      .getPublicUrl(excelPath);
-    const { data: csvUrlData } = supabase.storage
-      .from("exports")
-      .getPublicUrl(csvPath);
-    const excelUrl = excelUrlData.publicUrl;
-    const csvUrl = csvUrlData.publicUrl;
-
+    // Store the storage PATH (not a public URL) — signed URLs are generated on demand.
     await supabase
       .from("statements")
       .update({
         status: "completed",
         parsed_data: transactions,
-        excel_url: excelUrl,
-        csv_url: csvUrl,
+        excel_url: excelPath,
+        csv_url: csvPath,
         updated_at: new Date().toISOString(),
       })
       .eq("id", statementId);
@@ -342,8 +334,8 @@ export async function POST(request: NextRequest) {
         filename: statement.filename,
         status: "completed",
         parsed_data: transactions,
-        excel_url: excelUrl,
-        csv_url: csvUrl,
+        excel_url: excelPath,
+        csv_url: csvPath,
       },
     });
   } catch (err) {

@@ -249,7 +249,7 @@ export default function UploadPage() {
     }
   }
 
-  function handleDownloadExcel() {
+  async function handleDownloadExcel() {
     if (excelBase64) {
       try {
         const binaryString = window.atob(excelBase64);
@@ -273,15 +273,23 @@ export default function UploadPage() {
         console.error("Download failed:", err);
         alert("下载失败: " + (err instanceof Error ? err.message : String(err)));
       }
-    } else if (statement?.excel_url) {
-      window.open(statement.excel_url, "_blank");
+    } else if (statement?.id) {
+      // Fallback: request a signed URL from the server.
+      try {
+        const r = await fetch(`/api/signed-url?statement_id=${statement.id}&type=excel`);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Failed to get download link");
+        window.open(data.url, "_blank");
+      } catch (e) {
+        alert(e instanceof Error ? e.message : "Download failed");
+      }
     } else {
       console.warn("No excel data available for download", { excelBase64, statement });
       alert("Excel 数据未就绪，请重试。");
     }
   }
 
-  function handleDownloadCSV() {
+  async function handleDownloadCSV() {
     const baseName = statement?.filename?.replace(/\.pdf$/i, "") || "transactions";
     if (csvBase64) {
       try {
@@ -304,8 +312,16 @@ export default function UploadPage() {
         console.error("CSV download failed:", err);
         alert("下载失败: " + (err instanceof Error ? err.message : String(err)));
       }
-    } else if (statement?.csv_url) {
-      window.open(statement.csv_url, "_blank");
+    } else if (statement?.id) {
+      // Fallback: request a signed URL from the server.
+      try {
+        const r = await fetch(`/api/signed-url?statement_id=${statement.id}&type=csv`);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Failed to get download link");
+        window.open(data.url, "_blank");
+      } catch (e) {
+        alert(e instanceof Error ? e.message : "Download failed");
+      }
     } else {
       console.warn("No csv data available for download", { csvBase64, statement });
       alert("CSV 数据未就绪，请重试。");

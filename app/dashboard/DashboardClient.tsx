@@ -164,11 +164,22 @@ export default function DashboardClient({
                         {s.status === "completed" ? (
                           <div className="flex justify-end gap-1">
                             {s.excel_url && !isDemo ? (
-                              <a href={s.excel_url} target="_blank" rel="noopener noreferrer">
-                                <Button size="sm" variant="success">
-                                  Excel
-                                </Button>
-                              </a>
+                              <Button
+                                size="sm"
+                                variant="success"
+                                onClick={async () => {
+                                  try {
+                                    const r = await fetch(`/api/signed-url?statement_id=${s.id}&type=excel`);
+                                    const data = await r.json();
+                                    if (!r.ok) throw new Error(data.error || "Failed to get download link");
+                                    window.open(data.url, "_blank");
+                                  } catch (e) {
+                                    alert(e instanceof Error ? e.message : "Download failed");
+                                  }
+                                }}
+                              >
+                                Excel
+                              </Button>
                             ) : (
                               <Button
                                 size="sm"
@@ -181,11 +192,22 @@ export default function DashboardClient({
                               </Button>
                             )}
                             {s.csv_url && !isDemo ? (
-                              <a href={s.csv_url} target="_blank" rel="noopener noreferrer">
-                                <Button size="sm" variant="outline">
-                                  CSV
-                                </Button>
-                              </a>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  try {
+                                    const r = await fetch(`/api/signed-url?statement_id=${s.id}&type=csv`);
+                                    const data = await r.json();
+                                    if (!r.ok) throw new Error(data.error || "Failed to get download link");
+                                    window.open(data.url, "_blank");
+                                  } catch (e) {
+                                    alert(e instanceof Error ? e.message : "Download failed");
+                                  }
+                                }}
+                              >
+                                CSV
+                              </Button>
                             ) : (
                               <Button
                                 size="sm"
