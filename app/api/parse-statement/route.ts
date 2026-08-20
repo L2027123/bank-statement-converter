@@ -112,24 +112,42 @@ function parseRuleBased(text: string): ParsedResult {
     let credit: number | null = null;
     let balance: number | null = null;
 
+    // Detect explicit leading CREDIT/DEBIT keyword first (e.g. "01/20/2026 CREDIT Freelance Payment $850.00").
+    // This takes priority over substring matching to avoid misclassifying
+    // "Freelance Payment" (contains "payment") as a debit when labeled CREDIT.
+    const leadingCredit = /^\s*(credit|deposit|refund|income|transfer in|salary)\b/i.test(rest);
+    const leadingDebit = /^\s*(debit|withdrawal|payment|charge|expense|check card|purchase)\b/i.test(rest);
+
     if (amounts.length === 1) {
-      const isDebit = /(debit|withdrawal|payment|charge|expense|check card|purchase)/i.test(rest);
-      const isCredit = /(credit|deposit|refund|income|transfer in|salary)/i.test(rest);
-      if (isDebit) debit = amounts[0];
-      else if (isCredit) credit = amounts[0];
-      else debit = amounts[0];
+      if (leadingCredit) credit = amounts[0];
+      else if (leadingDebit) debit = amounts[0];
+      else {
+        const isCredit = /(credit|deposit|refund|income|transfer in|salary)/i.test(rest);
+        const isDebit = /(debit|withdrawal|payment|charge|expense|check card|purchase)/i.test(rest);
+        if (isCredit) credit = amounts[0];
+        else if (isDebit) debit = amounts[0];
+        else debit = amounts[0];
+      }
     } else if (amounts.length === 2) {
-      const hasDebitLabel = /(debit|withdrawal|payment|charge|expense|check card|purchase)/i.test(rest);
-      const hasCreditLabel = /(credit|deposit|refund|income|transfer in|salary)/i.test(rest);
-      if (hasDebitLabel) {
-        debit = amounts[0];
-        balance = amounts[1];
-      } else if (hasCreditLabel) {
+      if (leadingCredit) {
         credit = amounts[0];
         balance = amounts[1];
-      } else {
+      } else if (leadingDebit) {
         debit = amounts[0];
-        credit = amounts[1];
+        balance = amounts[1];
+      } else {
+        const hasCreditLabel = /(credit|deposit|refund|income|transfer in|salary)/i.test(rest);
+        const hasDebitLabel = /(debit|withdrawal|payment|charge|expense|check card|purchase)/i.test(rest);
+        if (hasCreditLabel) {
+          credit = amounts[0];
+          balance = amounts[1];
+        } else if (hasDebitLabel) {
+          debit = amounts[0];
+          balance = amounts[1];
+        } else {
+          debit = amounts[0];
+          credit = amounts[1];
+        }
       }
     } else if (amounts.length >= 3) {
       debit = !isNaN(amounts[0]) ? amounts[0] : null;
@@ -186,7 +204,7 @@ Transactions:
 01/25/2026 DEBIT Pharmacy $34.50
 01/28/2026 DEBIT Internet Service $65.00
 
-Closing Balance: $9,155.93
+Closing Balance: $8,834.82
 `;
 
 export async function POST(request: NextRequest) {
