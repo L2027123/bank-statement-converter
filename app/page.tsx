@@ -11,29 +11,53 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const PLANS = [
   {
-    name: "Free",
-    price: 0,
-    blurb: "For trying things out",
-    features: ["3 statements / month", "Excel export", "Email support"],
-    cta: "Get Started Free",
+    name: "Starter",
+    credits: 10,
+    price: 5,
+    blurb: "For occasional use",
+    features: [
+      "10 credits = 10 statements",
+      "Excel & CSV export",
+      "No subscription, no auto-renew",
+      "Credits never expire",
+    ],
+    cta: "Buy Starter",
     highlight: false,
   },
   {
     name: "Pro",
+    credits: 50,
     price: 19,
-    blurb: "For freelancers & individuals",
-    features: ["50 statements / month", "Excel & CSV export", "Priority support"],
-    cta: "Start Pro",
+    blurb: "Most popular for regular bookkeeping",
+    features: [
+      "50 credits = 50 statements",
+      "Excel & CSV export",
+      "Priority email support",
+      "Credits never expire",
+    ],
+    cta: "Buy Pro",
     highlight: true,
   },
   {
-    name: "Business",
-    price: 39,
-    blurb: "For teams & high volume",
-    features: ["200 statements / month", "Bulk upload", "Dedicated support"],
-    cta: "Start Business",
+    name: "Tax Season Pack",
+    credits: 100,
+    price: 29,
+    blurb: "For busy season — 90-day priority",
+    features: [
+      "100 credits = 100 statements",
+      "90-day priority processing queue",
+      "Excel & CSV export",
+      "Credits never expire",
+    ],
+    cta: "Buy Tax Season Pack",
     highlight: false,
   },
+];
+
+const HERO_BULLETS = [
+  "Currently optimized for Chase, Bank of America, and Wells Fargo",
+  "Other major banks supported via AI parsing (85%+ accuracy)",
+  "Scanning/image-based PDFs not yet supported — we're adding OCR soon",
 ];
 
 export default function Home() {
@@ -83,18 +107,62 @@ export default function Home() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand/5 to-white" />
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
-          <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-            AI-powered · Chase, Wells Fargo, BofA & more
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Convert Bank Statements to Excel in Seconds
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-            AI-powered parser for Chase, Wells Fargo, Bank of America, and other major US banks. Upload a PDF — get a clean Excel file back.
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+            Bank Statement Converter
           </p>
+          <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            PDF to Excel &amp; CSV — Pay Per Use, Not Per Month
+          </h1>
+
+          {/* Hero bullets */}
+          <ul className="mx-auto mt-8 max-w-2xl space-y-3 text-left">
+            {HERO_BULLETS.map((b) => (
+              <li
+                key={b}
+                className="flex items-start gap-3 text-base text-foreground"
+              >
+                <svg
+                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-success"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
+                </svg>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA buttons */}
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              onClick={() => router.push("/upload?demo=true")}
+              className="h-12 px-6 text-base"
+            >
+              Try 3 Free — No Signup
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                const el = document.getElementById("pricing");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="h-12 px-6 text-base"
+            >
+              View Pricing
+            </Button>
+          </div>
 
           {/* Upload area */}
-          <div className="mx-auto mt-10 max-w-2xl">
+          <div className="mx-auto mt-12 max-w-2xl">
             <label
               onDragOver={(e) => {
                 e.preventDefault();
@@ -137,32 +205,36 @@ export default function Home() {
               />
             </label>
             {error && <p className="mt-3 text-sm text-danger">{error}</p>}
-            <div className="mt-4 text-center">
-              <Button
-                variant="outline"
-                onClick={() => router.push("/upload?demo=true")}
-              >
-                ✨ 试用演示版（无需注册）
-              </Button>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust — Why bookkeepers trust us */}
+      <section className="w-full border-t border-b border-border bg-brand/[0.03]">
+        <div className="mx-auto max-w-4xl px-4 py-14 sm:py-16">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+              Why bookkeepers trust us
+            </p>
           </div>
 
-          {/* Supported banks */}
-          <div className="mt-12">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Works with statements from
+          <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border bg-white p-6 sm:p-8 shadow-sm">
+            <svg
+              className="mb-4 h-8 w-8 text-brand/40"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
+            </svg>
+
+            <p className="text-lg font-medium leading-relaxed text-foreground sm:text-xl">
+              &ldquo;Parse failed? You pay nothing. Credits are only deducted after successful extraction.&rdquo;
             </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-semibold text-foreground">
-              <span>Chase</span>
-              <span className="text-border">·</span>
-              <span>Wells Fargo</span>
-              <span className="text-border">·</span>
-              <span>Bank of America</span>
-              <span className="text-border">·</span>
-              <span>Citi</span>
-              <span className="text-border">·</span>
-              <span>Capital One</span>
-            </div>
+
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground">
+              Unlike monthly subscriptions, buy credits and use them whenever you need — perfect for tax season crunch or year-end catch-up.
+            </p>
           </div>
         </div>
       </section>
@@ -171,10 +243,10 @@ export default function Home() {
       <section id="pricing" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-20">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Simple, transparent pricing
+            Pay Per Use. No Subscription. No Auto-Renew.
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Start free. Upgrade when you need more.
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            One credit = one bank statement PDF. Buy as many or as few as you need. Credits never expire.
           </p>
         </div>
 
@@ -200,10 +272,9 @@ export default function Home() {
                   <span className="text-4xl font-bold text-foreground">
                     ${plan.price}
                   </span>
-                  <span className="text-sm text-muted-foreground">/month</span>
                 </div>
                 <p className="mt-2 text-sm font-medium text-brand">
-                  {plan.price === 0 ? "3" : plan.name === "Pro" ? "50" : "200"} statements/month
+                  {plan.credits} credits · {plan.credits} statements
                 </p>
                 <ul className="mt-6 flex-1 space-y-3 text-sm text-muted-foreground">
                   {plan.features.map((f) => (
