@@ -82,12 +82,15 @@ create trigger on_auth_user_created
 --  Storage buckets & policies
 -- ============================================================
 
+-- S1: statements + exports buckets are both PRIVATE.
+-- Download access is granted exclusively via short-lived signed URLs issued by /api/signed-url.
+
 -- 'statements' bucket: PRIVATE (holds uploaded PDFs)
 insert into storage.buckets (id, name, public) values ('statements', 'statements', false)
   on conflict (id) do nothing;
 
--- 'exports' bucket: PUBLIC read (holds generated Excel files)
-insert into storage.buckets (id, name, public) values ('exports', 'exports', true)
+-- 'exports' bucket: PRIVATE (holds generated Excel/CSV files — signed URL only)
+insert into storage.buckets (id, name, public) values ('exports', 'exports', false)
   on conflict (id) do nothing;
 
 -- statements: users can CRUD objects inside their own folder (first segment = user id)
@@ -101,11 +104,14 @@ create policy "statements_storage_update_own" on storage.objects
 create policy "statements_storage_delete_own" on storage.objects
   for delete using (bucket_id = 'statements' and (storage.foldername(name))[1] = auth.uid()::text);
 
--- exports: public read; users can write inside their own folder
-create policy "exports_storage_public_read" on storage.objects
-  for select using (bucket_id = 'exports');
+-- exports: NO public read — only authenticated owners and the service role (signed URLs) can access.
+-- Drop the legacy exports_storage_public_read policy if it exists (handled in migration).
+create policy "exports_storage_read_own" on storage.objects
+  for select using (bucket_id = 'exports' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "exports_storage_write_own" on storage.objects
   for insert with check (bucket_id = 'exports' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "exports_storage_update_own" on storage.objects
   for update using (bucket_id = 'exports' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'exports' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "exports_storage_delete_own" on storage.objects
+  for delete using (bucket_id = 'exports' and (storage.foldername(name))[1] = auth.uid()::text);
