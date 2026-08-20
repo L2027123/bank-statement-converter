@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Analytics from "@/components/Analytics";
+import FloatingContact from "@/components/FloatingContact";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,6 +24,8 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <Analytics />
+        <FloatingContact />
       </body>
     </html>
   );

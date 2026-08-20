@@ -283,7 +283,7 @@ export default function Home() {
               Terms of Service
             </Link>
             <a
-              href="mailto:support@bankstatementconverter.com"
+              href="mailto:junliang2027@outlook.com"
               className="hover:text-brand"
             >
               Contact
