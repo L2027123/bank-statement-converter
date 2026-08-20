@@ -46,10 +46,6 @@ export default function RequestBankForm({ onSuccess }: RequestBankFormProps) {
       );
       setBankName("");
       setEmail("");
-      if (onSuccess) {
-        // Let the user see the success message briefly before the parent hides us.
-        setTimeout(() => onSuccess(), 1500);
-      }
     } catch (err) {
       setStatus("error");
       setMessage(err instanceof Error ? err.message : "Something went wrong.");
@@ -58,9 +54,21 @@ export default function RequestBankForm({ onSuccess }: RequestBankFormProps) {
 
   if (status === "success") {
     return (
-      <div className="rounded-lg border border-success/30 bg-success/5 p-4 text-sm text-success">
-        <p className="font-medium">✓ Request received</p>
-        <p className="mt-1 text-xs opacity-90">{message}</p>
+      <div className="space-y-3">
+        <div className="rounded-lg border border-success/30 bg-success/5 p-4 text-sm text-success">
+          <p className="font-medium">✓ Request received</p>
+          <p className="mt-1 text-xs opacity-90">{message}</p>
+        </div>
+        {onSuccess && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSuccess}
+            className="w-full"
+          >
+            Close
+          </Button>
+        )}
       </div>
     );
   }
