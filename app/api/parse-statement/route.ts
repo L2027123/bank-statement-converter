@@ -34,6 +34,12 @@ const SYSTEM_PROMPT =
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
 const DEEPSEEK_MODEL = "deepseek-chat";
 
+const OCR_PROMPT =
+  "You are a bank statement OCR expert. The attached PDF is a bank statement that pdf-parse could not extract text from (likely scanned or bad font encoding). Your task: 1) Read ALL text visible in the document, 2) Extract transaction records with date, description, and amounts, 3) Extract opening balance and closing balance if present, 4) Handle any currency (USD, EUR, GBP, SEK, etc.). Return ONLY the raw extracted text as plain text, preserving the original layout. Do not summarize or omit anything.";
+
+const GPT4O_URL = "https://api.openai.com/v1/chat/completions";
+const GPT4O_MODEL = "gpt-4o";
+
 async function parseWithAI(text: string): Promise<ParsedResult> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
@@ -66,6 +72,47 @@ async function parseWithAI(text: string): Promise<ParsedResult> {
     aiData?.choices?.[0]?.message?.content ?? "";
 
   return extractParsedResult(responseText);
+}
+
+async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OpenAI API key not configured. Set OPENAI_API_KEY env var to enable OCR for scanned PDFs.");
+  }
+
+  const base64 = pdfBuffer.toString("base64");
+  const dataUrl = `data:application/pdf;base64,${base64}`;
+
+  const resp = await fetch(GPT4O_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GPT4O_MODEL,
+      messages: [
+        { role: "system", content: OCR_PROMPT },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: `Please OCR this bank statement PDF: ${filename}` },
+            { type: "file_url", file_url: { url: dataUrl } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 8000,
+    }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`GPT-4o OCR failed (${resp.status}): ${errText}`);
+  }
+
+  const data = await resp.json();
+  return data?.choices?.[0]?.message?.content ?? "";
 }
 
 function parseRuleBased(text: string): ParsedResult {
@@ -292,10 +339,21 @@ export async function POST(request: NextRequest) {
     const parser = new PDFParse({ data: buffer });
     const textResult = await parser.getText();
     await parser.destroy().catch(() => {});
-    const text = textResult.text?.trim() ?? "";
+    let text = textResult.text?.trim() ?? "";
 
+    // OCR fallback: if pdf-parse couldn't extract text (scanned/bad-font PDF),
+    // try GPT-4o Vision OCR. This is critical for European banks that started
+    // using non-Unicode PDF creation tools after 2021 (e.g., Deutsche Bank).
     if (!text) {
-      throw new Error("No text could be extracted from this PDF (it may be a scanned image).");
+      try {
+        text = await ocrWithVision(buffer, statement.filename);
+        if (!text.trim()) {
+          throw new Error("OCR completed but extracted no readable text from this PDF. The file may be corrupted or in an unsupported format.");
+        }
+      } catch (ocrErr) {
+        const ocrMsg = ocrErr instanceof Error ? ocrErr.message : "Unknown OCR error";
+        throw new Error(`pdf-parse found no text and OCR also failed: ${ocrMsg}. This PDF appears to be a scanned image with no text layer.`);
+      }
     }
 
     let parsed: ParsedResult;
