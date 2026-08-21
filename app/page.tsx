@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BANKS } from "@/lib/banks";
-import WaitlistForm from "@/components/WaitlistForm";
+import { WaitlistForm } from "@/components/WaitlistForm";
+import DemoAnimation from "@/components/DemoAnimation";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -164,6 +165,9 @@ export default function Home() {
               View Pricing
             </Button>
           </div>
+
+          {/* Auto-playing demo */}
+          <DemoAnimation />
 
           {/* Upload area */}
           <div className="mx-auto mt-12 max-w-2xl">
