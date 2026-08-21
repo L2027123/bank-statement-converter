@@ -78,19 +78,46 @@ async function parseWithAI(text: string): Promise<ParsedResult> {
   return extractParsedResult(responseText);
 }
 
+async function uploadFileToArk(apiKey: string, pdfBuffer: Buffer, filename: string): Promise<string> {
+  const url = `${OCR_BASE_URL}${OCR_BASE_URL.endsWith("/") ? "" : "/files"}`;
+  const formData = new FormData();
+  formData.append("purpose", "user_data");
+  const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+  formData.append("file", blob, filename);
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: formData,
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Failed to upload PDF to Ark: ${resp.status} ${errText}`);
+  }
+
+  const data = await resp.json();
+  return data.id || data.file_id || "";
+}
+
 async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<string> {
   const apiKey = process.env.OCR_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OCR API key not configured. Set OCR_API_KEY (or OPENAI_API_KEY) env var to enable OCR for scanned PDFs.");
   }
 
-  const base64 = pdfBuffer.toString("base64");
-  const dataUrl = `data:application/pdf;base64,${base64}`;
+  // Step 1: Upload PDF to Ark Files API
+  const fileId = await uploadFileToArk(apiKey, pdfBuffer, filename);
+  if (!fileId) {
+    throw new Error("Failed to get file_id from Ark upload response.");
+  }
 
-  // Use chat/completions endpoint for both OpenAI native and Volcengine Ark relay
-  const url = `${OCR_BASE_URL}${OCR_BASE_URL.endsWith("/") ? "" : "/chat/completions"}`;
+  // Step 2: Call Responses API with file_id
+  const responsesUrl = `${OCR_BASE_URL}${OCR_BASE_URL.endsWith("/") ? "" : "/responses"}`;
 
-  const resp = await fetch(url, {
+  const resp = await fetch(responsesUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -98,28 +125,50 @@ async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<strin
     },
     body: JSON.stringify({
       model: OCR_MODEL,
-      messages: [
-        { role: "system", content: OCR_PROMPT },
+      input: [
         {
           role: "user",
           content: [
-            { type: "text", text: `Please OCR this bank statement PDF: ${filename}` },
-            { type: "file_url", file_url: { url: dataUrl } },
+            {
+              type: "input_file",
+              file_id: fileId,
+            },
+            {
+              type: "input_text",
+              text: OCR_PROMPT,
+            },
           ],
         },
       ],
-      temperature: 0,
-      max_tokens: 8000,
+      max_output_tokens: 8000,
     }),
   });
 
   if (!resp.ok) {
     const errText = await resp.text();
-    throw new Error(`OCR API call failed (${resp.status}): ${errText}`);
+    throw new Error(`OCR Responses API call failed (${resp.status}): ${errText}`);
   }
 
   const data = await resp.json();
-  return data?.choices?.[0]?.message?.content ?? "";
+
+  // Responses API returns output[].content[].text
+  const outputs = data?.outputs || [];
+  for (const output of outputs) {
+    if (output?.content) {
+      for (const content of output.content) {
+        if (content?.type === "output_text" && content?.text) {
+          return content.text;
+        }
+      }
+    }
+  }
+
+  // Fallback: check direct output_text in top-level data
+  if (data?.output_text) {
+    return data.output_text;
+  }
+
+  return "";
 }
 
 function parseRuleBased(text: string): ParsedResult {
