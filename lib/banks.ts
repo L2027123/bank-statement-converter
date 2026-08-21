@@ -428,6 +428,119 @@ export const BANKS: BankInfo[] = [
       "Varo Bank (mobile-only neobank) statements list transactions in a single-column format with date, description, and amount. No physical branches.",
     statementTypes: ["Checking", "Savings"],
   },
+  // European banks — IBAN / SEPA / VAT-aware parsing
+  {
+    slug: "deutsche-bank",
+    name: "Deutsche Bank",
+    fullName: "Deutsche Bank AG",
+    formatNote:
+      "Deutsche Bank statements list transactions with date, description, and amount in EUR. IBAN appears in the account header. VAT-registered businesses may see USt-ID and tax breakdowns.",
+    statementTypes: ["Girokonto", "Sparkonto", "Kreditkarte"],
+  },
+  {
+    slug: "barclays-uk",
+    name: "Barclays UK",
+    fullName: "Barclays Bank UK PLC",
+    formatNote:
+      "Barclays UK statements use GBP with date, description, and amount columns. Sort code and account number appear in the header. Business accounts include VAT and reference numbers.",
+    statementTypes: ["Current Account", "Savings", "Credit Card"],
+  },
+  {
+    slug: "hsbc-uk",
+    name: "HSBC UK",
+    fullName: "HSBC UK Bank plc",
+    formatNote:
+      "HSBC UK statements list transactions in GBP with date, payee, and amount. SEPA payments may appear with IBAN. Business statements include VAT breakdowns.",
+    statementTypes: ["Current Account", "Savings", "Credit Card"],
+  },
+  {
+    slug: "bunq",
+    name: "Bunq",
+    fullName: "Bunq B.V.",
+    formatNote:
+      "Bunq (Dutch neobank) statements are multilingual (NL/EN) with EUR transactions. Includes IBAN, BIC, and automatic VAT categorization for business accounts.",
+    statementTypes: ["Bunq Easy Bank", "Bunq Premium", "Business Account"],
+  },
+  {
+    slug: "ing",
+    name: "ING",
+    fullName: "ING Groep N.V.",
+    formatNote:
+      "ING Bank (Netherlands) statements use EUR with date, description, and amount. IBAN prominent in header. Business accounts include VAT and BTW numbers.",
+    statementTypes: ["Rekening", "Spaarrekening", "Creditcard"],
+  },
+  {
+    slug: "revolut",
+    name: "Revolut",
+    fullName: "Revolut Bank UAB",
+    formatNote:
+      "Revolut statements list transactions with merchant, amount, and currency. Supports multi-currency with automatic conversion. Business accounts include VAT extraction.",
+    statementTypes: ["Personal", "Business", "Metal"],
+  },
+  {
+    slug: "monzo",
+    name: "Monzo",
+    fullName: "Monzo Bank Limited",
+    formatNote:
+      "Monzo (UK neobank) statements use GBP with category-tagged transactions. Sort code and account number in header. Business accounts support VAT tracking.",
+    statementTypes: ["Current Account", "Business Account", "Savings"],
+  },
+  {
+    slug: "starling",
+    name: "Starling",
+    fullName: "Starling Bank Limited",
+    formatNote:
+      "Starling (UK) statements list transactions with category tags and amounts in GBP. Business accounts include automatic VAT categorization and MTD-compatible exports.",
+    statementTypes: ["Personal", "Business", "Sole Trader"],
+  },
+  {
+    slug: "n26",
+    name: "N26",
+    fullName: "N26 Bank AG",
+    formatNote:
+      "N26 (German neobank) statements use EUR with date, merchant, and amount. IBAN appears prominently. Tax statements include German VAT (Umsatzsteuer) for business accounts.",
+    statementTypes: ["Standard", "Smart", "Business"],
+  },
+  {
+    slug: "abn-amro",
+    name: "ABN AMRO",
+    fullName: "ABN AMRO Bank N.V.",
+    formatNote:
+      "ABN AMRO (Netherlands) statements use EUR with date, description, and amount columns. IBAN and BIC in header. Business accounts include BTW (VAT) numbers.",
+    statementTypes: ["Rekening", "Spaarrekening", "Creditcard"],
+  },
+  {
+    slug: "seb",
+    name: "SEB",
+    fullName: "SEB AB",
+    formatNote:
+      "SEB (Sweden) statements use SEK/EUR with date, description, and amount. IBAN and BIC in header. Business accounts include VAT (moms) breakdowns.",
+    statementTypes: ["Privatkonto", "Företagskonto", "Kreditkort"],
+  },
+  {
+    slug: "santander-uk",
+    name: "Santander UK",
+    fullName: "Santander UK plc",
+    formatNote:
+      "Santander UK statements use GBP with date, payee, and amount. Sort code in header. Business accounts include reference numbers and VAT.",
+    statementTypes: ["Current Account", "Savings", "Credit Card"],
+  },
+  {
+    slug: "caixabank",
+    name: "CaixaBank",
+    fullName: "CaixaBank, S.A.",
+    formatNote:
+      "CaixaBank (Spain) statements use EUR with date, descripción, and importe. IBAN in header. Business accounts include IVA (VAT) and CIF numbers.",
+    statementTypes: ["Cuenta Corriente", "Ahorro", "Tarjeta de Crédito"],
+  },
+  {
+    slug: "kbc",
+    name: "KBC",
+    fullName: "KBC Bank NV",
+    formatNote:
+      "KBC Bank (Belgium) statements use EUR with date, description, and amount. IBAN and BIC in header. Business accounts include TVA (VAT) numbers.",
+    statementTypes: ["Zichtrekening", "Spaarrekening", "Creditcard"],
+  },
 ];
 
 /**

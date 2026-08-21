@@ -62,6 +62,7 @@ const PLANS = [
 const HERO_BULLETS = [
   "Currently optimized for Chase, Bank of America, and Wells Fargo",
   "Other major banks supported via AI parsing (85%+ accuracy)",
+  "Supports IBAN / VAT extraction for European business statements",
   "Scanning/image-based PDFs not yet supported — we're adding OCR soon",
 ];
 
