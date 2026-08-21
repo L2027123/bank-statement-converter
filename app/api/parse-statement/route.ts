@@ -37,8 +37,12 @@ const DEEPSEEK_MODEL = "deepseek-chat";
 const OCR_PROMPT =
   "You are a bank statement OCR expert. The attached PDF is a bank statement that pdf-parse could not extract text from (likely scanned or bad font encoding). Your task: 1) Read ALL text visible in the document, 2) Extract transaction records with date, description, and amounts, 3) Extract opening balance and closing balance if present, 4) Handle any currency (USD, EUR, GBP, SEK, etc.). Return ONLY the raw extracted text as plain text, preserving the original layout. Do not summarize or omit anything.";
 
-const GPT4O_URL = "https://api.openai.com/v1/chat/completions";
-const GPT4O_MODEL = "gpt-4o";
+// OCR endpoint — configurable via env vars for relay/proxy support
+// Default: OpenAI native GPT-4o
+// For Volcengine Ark relay: set OCR_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+//   and OCR_MODEL=<your model ID on Volcengine>
+const OCR_BASE_URL = process.env.OCR_BASE_URL || "https://api.openai.com/v1";
+const OCR_MODEL = process.env.OCR_MODEL || "gpt-4o";
 
 async function parseWithAI(text: string): Promise<ParsedResult> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -75,22 +79,25 @@ async function parseWithAI(text: string): Promise<ParsedResult> {
 }
 
 async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OCR_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("OpenAI API key not configured. Set OPENAI_API_KEY env var to enable OCR for scanned PDFs.");
+    throw new Error("OCR API key not configured. Set OCR_API_KEY (or OPENAI_API_KEY) env var to enable OCR for scanned PDFs.");
   }
 
   const base64 = pdfBuffer.toString("base64");
   const dataUrl = `data:application/pdf;base64,${base64}`;
 
-  const resp = await fetch(GPT4O_URL, {
+  // Use chat/completions endpoint for both OpenAI native and Volcengine Ark relay
+  const url = `${OCR_BASE_URL}${OCR_BASE_URL.endsWith("/") ? "" : "/chat/completions"}`;
+
+  const resp = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: GPT4O_MODEL,
+      model: OCR_MODEL,
       messages: [
         { role: "system", content: OCR_PROMPT },
         {
@@ -108,7 +115,7 @@ async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<strin
 
   if (!resp.ok) {
     const errText = await resp.text();
-    throw new Error(`GPT-4o OCR failed (${resp.status}): ${errText}`);
+    throw new Error(`OCR API call failed (${resp.status}): ${errText}`);
   }
 
   const data = await resp.json();
