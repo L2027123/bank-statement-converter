@@ -151,14 +151,18 @@ async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<strin
 
   const data = await resp.json();
 
-  // Responses API returns output[].content[].text
-  const outputs = data?.outputs || [];
+  // Volcengine Ark Responses API returns output (singular) array
+  // Each output has type: "reasoning" or "message"
+  // We only extract text from "message" type outputs
+  const outputs = data?.output || data?.outputs || [];
   for (const output of outputs) {
-    if (output?.content) {
-      for (const content of output.content) {
-        if (content?.type === "output_text" && content?.text) {
-          return content.text;
-        }
+    // Skip reasoning outputs, only process message outputs
+    if (output?.type !== "message" || !output?.content) {
+      continue;
+    }
+    for (const content of output.content) {
+      if (content?.type === "output_text" && content?.text) {
+        return content.text;
       }
     }
   }
@@ -169,6 +173,25 @@ async function ocrWithVision(pdfBuffer: Buffer, filename: string): Promise<strin
   }
 
   return "";
+}
+
+/**
+ * 判断 pdf-parse 提取的文本是否"有效"到可用于解析银行对账单。
+ * 扫描 PDF（图像型）通常只包含少量元数据（如页码 "1 of 1"），
+ * 这些文本无法用于解析，必须回退到 OCR。
+ */
+function isTextValidForParsing(text: string): boolean {
+  if (!text || text.trim().length < 20) {
+    return false;
+  }
+
+  // 检查是否包含银行对账单的关键特征
+  const hasDate = /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(text);
+  const hasAmount = /\$?\s?\d+[,.]?\d*\.\d{2}/.test(text);
+  const hasTransactionKeyword = /(transaction|debit|credit|balance|statement|account|deposit|withdraw)/i.test(text);
+
+  // 至少需要日期或金额之一，且包含交易相关关键词
+  return (hasDate && hasAmount) || (hasDate && hasTransactionKeyword);
 }
 
 function parseRuleBased(text: string): ParsedResult {
@@ -397,10 +420,10 @@ export async function POST(request: NextRequest) {
     await parser.destroy().catch(() => {});
     let text = textResult.text?.trim() ?? "";
 
-    // OCR fallback: if pdf-parse couldn't extract text (scanned/bad-font PDF),
-    // try GPT-4o Vision OCR. This is critical for European banks that started
-    // using non-Unicode PDF creation tools after 2021 (e.g., Deutsche Bank).
-    if (!text) {
+    // OCR fallback: if pdf-parse couldn't extract valid text (scanned/bad-font PDF),
+    // try Vision OCR. Scanned PDFs may contain only metadata (e.g., "1 of 1")
+    // that passes the empty check but is not parseable bank statement text.
+    if (!isTextValidForParsing(text)) {
       try {
         text = await ocrWithVision(buffer, statement.filename);
         if (!text.trim()) {
@@ -408,7 +431,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (ocrErr) {
         const ocrMsg = ocrErr instanceof Error ? ocrErr.message : "Unknown OCR error";
-        throw new Error(`pdf-parse found no text and OCR also failed: ${ocrMsg}. This PDF appears to be a scanned image with no text layer.`);
+        throw new Error(`pdf-parse found no valid text and OCR also failed: ${ocrMsg}. This PDF appears to be a scanned image with no text layer.`);
       }
     }
 
